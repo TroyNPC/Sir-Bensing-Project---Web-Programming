@@ -1,0 +1,59 @@
+html, body{
+   padding: 0px;
+   margin: 0px;
+   font-family: 'Montserrat';
+   box-sizing: border-box; 
+}
+
+body{
+    background: white;
+    font-size: 18px;
+    transition: all 0.5s ease;
+}
+.carousel-caption h1,
+.carousel-caption p {
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 768px) {
+    html, body {
+        font-size: 16px;
+    }
+    .carousel-caption h1 {
+        font-size: 1.5rem;
+    }
+    .carousel-caption p {
+        font-size: 1rem;
+    }
+    body {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    html, body {
+        font-size: 14px;
+    }
+    .carousel-caption h1 {
+        font-size: 1.2rem;
+    }
+    .carousel-caption p {
+        font-size: 0.95rem;
+    }
+    body {
+        padding: 5px;
+    }
+}
+
+img, video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.container, .carousel-caption {
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 10px;
+    padding-right: 10px;
+}
