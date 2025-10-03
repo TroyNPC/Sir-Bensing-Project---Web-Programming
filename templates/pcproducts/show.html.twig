@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PC Product Details{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <h1 class="mb-4 text-center">PC Product Details</h1>
+
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="row g-0">
+            <div class="col-md-4 text-center p-3">
+                {% if pcproduct.image %}
+                    <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}" 
+                         alt="{{ pcproduct.name }}" 
+                         class="img-fluid rounded" 
+                         style="max-height: 250px; object-fit: cover;">
+                {% else %}
+                    <span class="text-muted">No Image Available</span>
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h2 class="card-title fw-bold">{{ pcproduct.name }}</h2>
+
+                    <p>
+                        <strong>Category:</strong> 
+                        <span class="badge bg-info text-dark">{{ pcproduct.category }}</span>
+                    </p>
+                    <p><strong>Brand:</strong> {{ pcproduct.brand }}</p>
+                    <p><strong>Price:</strong> ${{ pcproduct.price|number_format(2, '.', ',') }}</p>
+                    <p><strong>Description:</strong><br> {{ pcproduct.description }}</p>
+                    <p>
+                        <strong>Created At:</strong> {{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d H:i:s') : '' }}<br>
+                        <strong>Updated At:</strong> {{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d H:i:s') : '' }}
+                    </p>
+                    <p>
+                        <strong>Available:</strong>
+                        {% if pcproduct.isavailable %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-danger">No</span>
+                        {% endif %}
+                    </p>
+
+                    <div class="mt-4">
+                        <a href="{{ path('app_pcproducts_index') }}" class="btn btn-secondary me-2">← Back to List</a>
+                        <a href="{{ path('app_pcproducts_edit', {'id': pcproduct.id}) }}" class="btn btn-warning me-2">✎ Edit</a>
+                        {{ include('pcproducts/_delete_form.html.twig', { pcproduct: pcproduct }) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

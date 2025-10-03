@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PC Products Index{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-5">
+    <h1 class="mb-4 text-center">PC Products</h1>
+
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-body">
+            <table class="table table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Photo</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Brand</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Created At</th>
+                        <th scope="col">Updated At</th>
+                        <th scope="col">Available</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for pcproduct in pcproducts %}
+                    <tr>
+                        <td>{{ pcproduct.id }}</td>
+                        <td>
+                            {% if pcproduct.image %}
+                                <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}" 
+                                     alt="{{ pcproduct.name }}" 
+                                     class="rounded" 
+                                     style="height: 50px; width: 50px; object-fit: cover;">
+                            {% else %}
+                                <span class="text-muted">No Image</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ pcproduct.name }}</td>
+                        <td>
+                            <span class="badge bg-info text-dark">{{ pcproduct.category }}</span>
+                        </td>
+                        <td>{{ pcproduct.brand }}</td>
+                        <td>${{ pcproduct.price|number_format(2, '.', ',') }}</td>
+                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            {{ pcproduct.description }}
+                        </td>
+                        <td>{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d') : '' }}</td>
+                        <td>{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d') : '' }}</td>
+                        <td>
+                            {% if pcproduct.isavailable %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-danger">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('app_pcproducts_show', {'id': pcproduct.id}) }}" 
+                               class="btn btn-sm btn-outline-info me-1">Show</a>
+                            <a href="{{ path('app_pcproducts_edit', {'id': pcproduct.id}) }}" 
+                               class="btn btn-sm btn-outline-warning me-1">Edit</a>
+                            {{ include('pcproducts/_delete_form.html.twig', { pcproduct: pcproduct }) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="11" class="text-muted text-center py-4">No records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="{{ path('app_pcproducts_new') }}" class="btn btn-success btn-lg shadow">➕ Add New Product</a>
+    </div>
+</div>
+{% endblock %}

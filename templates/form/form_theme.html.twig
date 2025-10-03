@@ -1,0 +1,24 @@
+{# templates/form/form_theme.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block form_row %}
+  <div class="mb-3">
+    {{ form_label(form, null, { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+    {{ form_widget(form, { 'attr': {'class': 'form-control'} }) }}
+    {% if form.vars.errors|length > 0 %}
+      <div class="text-danger small mt-1">
+        {{ form_errors(form) }}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block form_errors %}
+  {% if errors|length > 0 %}
+    <ul class="list-unstyled mb-0">
+      {% for error in errors %}
+        <li class="text-danger small">⚠ {{ error.message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

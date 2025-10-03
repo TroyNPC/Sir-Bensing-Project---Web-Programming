@@ -50,23 +50,40 @@
 
 <header class="navbar p-3" style="background: #2e2e2e;">
   <div class="container-fluid flex-wrap justify-content-between align-items-center">
+
+    <!-- Logo -->
     <a class="navbar-brand d-flex align-items-center mb-2 mb-lg-0">
       <img src="{{ asset('ICon.png') }}" alt="Logo"
            style="width: 50px; height: 32px; filter: grayscale(1) brightness(0) invert(1);">
     </a>
+
+    <!-- Nav links -->
     <ul class="nav justify-content-center flex-wrap mx-auto">
-      <li class="nav-item"><a class="nav-link text-white fs-6" href="{{path('app_projects')}}">Home</a></li>
-      <li class="nav-item"><a class="nav-link text-white fs-6" href="/products">Products</a></li>
-      <li class="nav-item"><a class="nav-link text-white fs-6" href="/services">Service Booking</a></li>
-      <li class="nav-item"><a class="nav-link text-white fs-6" href="/about">About</a></li>
-      <li class="nav-item"><a class="nav-link text-white fs-6" href="/contact">Contact</a></li>
+      <li class="nav-item">
+        <a class="nav-link text-white fs-6 fs-md-5 fs-lg-6" href="{{ path('app_projects') }}">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white fs-6 fs-md-5 fs-lg-6" href="{{ path('app_products') }}">Products</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white fs-6 fs-md-5 fs-lg-6" href="{{ path('app_servicebooking_new') }}">Service Booking</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white fs-6 fs-md-5 fs-lg-6" href="#">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white fs-6 fs-md-5 fs-lg-6" href="{{ path('app_contact') }}">Contact</a>
+      </li>
     </ul>
+
+    <!-- Right Buttons -->
     <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0">
-      <button type="button" class="btn btn-outline-light btn-sm">Login</button>
-      <button type="button" class="btn btn-sm text-white" style="background: #F88F6A;">Sign-up</button>
+      <a href="{{ path('app_login') }}" class="btn btn-outline-light btn-sm">Login</a>
+      <a href="{{ path('app_user_new') }}" class="btn btn-sm text-white" style="background: #F88F6A;">Sign-up</a>
     </div>
+
   </div>
-</header>
+</header
 
 <!-- Contact Section -->
 <section class="contact-section">

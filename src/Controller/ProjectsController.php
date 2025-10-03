@@ -23,4 +23,11 @@ final class ProjectsController extends AbstractController
             'controller_name' => 'ProjectsController',
         ]);
     }
+    #[Route('/products', name: 'app_products')]
+    public function product(): Response
+    {
+        return $this->render('projects/products.html.twig', [
+            'controller_name' => 'ProjectsController',
+        ]);
+    }
 }

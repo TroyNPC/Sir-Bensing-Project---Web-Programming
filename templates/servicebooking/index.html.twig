@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Servicebooking Index{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-5">
+    <h1 class="mb-4 text-center text-primary">Servicebooking Index</h1>
+
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle text-center mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">Id</th>
+                            <th scope="col">Service Type</th>
+                            <th scope="col">Adviser Category</th>
+                            <th scope="col">Preferred Date</th>
+                            <th scope="col">Notes</th>
+                            <th scope="col">Created At</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for servicebooking in servicebookings %}
+                        <tr>
+                            <td>{{ servicebooking.id }}</td>
+                            <td>{{ servicebooking.serviceType }}</td>
+                            <td>{{ servicebooking.advisercategory }}</td>
+                            <td>{{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : '' }}</td>
+                            <td>{{ servicebooking.notes }}</td>
+                            <td>{{ servicebooking.createdat ? servicebooking.createdat|date('Y-m-d H:i:s') : '' }}</td>
+                            <td>
+                                <a href="{{ path('app_servicebooking_show', {'id': servicebooking.id}) }}" class="btn btn-sm btn-outline-info me-1">Show</a>
+                                <a href="{{ path('app_servicebooking_edit', {'id': servicebooking.id}) }}" class="btn btn-sm btn-outline-warning me-1">Edit</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No records found</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="{{ path('app_servicebooking_new') }}" class="btn btn-success btn-lg shadow">➕ Create New</a>
+    </div>
+</div>
+{% endblock %}

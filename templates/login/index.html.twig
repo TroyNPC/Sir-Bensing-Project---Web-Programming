@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow rounded-3 border-0">
+        <div class="card-body p-4">
+          <h2 class="fw-bold text-center mb-4">Login</h2>
+
+          {{ form_start(form) }}
+
+          <div class="mb-3">
+            {{ form_label(form.email, 'Email', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.email, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your email'} }) }}
+            {{ form_errors(form.email) }}
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(form.password, 'Password', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.password, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your password'} }) }}
+            {{ form_errors(form.password) }}
+          </div>
+
+          <!-- Login and Sign Up buttons side by side -->
+          <div class="d-flex justify-content-center gap-2 mt-3">
+            <button type="submit" class="btn btn-outline-orange fw-bold">Login</button>
+            <a href="{{ path('app_user_new') }}" class="btn btn-outline-orange fw-bold">Sign Up</a>
+          </div>
+
+          {{ form_end(form) }}
+
+          <!-- Go Back button -->
+          <div class="text-center mt-2">
+            <a href="{{ path('app_projects') }}" class="btn btn-outline-orange fw-bold">Go Back</a>
+          </div>
+
+          {% for message in app.flashes('error') %}
+            <div class="alert alert-danger mt-3">{{ message }}</div>
+          {% endfor %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
