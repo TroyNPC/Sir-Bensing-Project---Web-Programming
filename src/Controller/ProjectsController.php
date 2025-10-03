@@ -16,4 +16,18 @@ final class ProjectsController extends AbstractController
         ]);
     }
 
+    #[Route('/contact', name: 'app_contact')]
+    public function contact(): Response
+    {
+        return $this->render('projects/contact.html.twig', [
+            'controller_name' => 'ProjectsController',
+        ]);
+    }
+    #[Route('/products', name: 'app_products')]
+    public function product(): Response
+    {
+        return $this->render('projects/products.html.twig', [
+            'controller_name' => 'ProjectsController',
+        ]);
+    }
 }

@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Service Booking Details{% endblock %}
+
+{% block body %}
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow rounded-3 border-0">
+        <div class="card-body">
+          <h2 class="fw-bold text-center mb-4">Service Booking Details</h2>
+
+          <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label fw-bold">ID</label>
+            <div class="col-sm-8">
+              <p class="form-control-plaintext">{{ servicebooking.id }}</p>
+            </div>
+          </div>
+
+          <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label fw-bold">Customer Name</label>
+            <div class="col-sm-8">
+              <p class="form-control-plaintext">{{ servicebooking.customerName }}</p>
+            </div>
+          </div>
+
+          <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label fw-bold">Service Type</label>
+            <div class="col-sm-8">
+              <p class="form-control-plaintext">{{ servicebooking.serviceType }}</p>
+            </div>
+          </div>
+
+          <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label fw-bold">Adviser Category</label>
+            <div class="col-sm-8">
+              <p class="form-control-plaintext">{{ servicebooking.advisercategory }}</p>
+            </div>
+          </div>
+
+          <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label fw-bold">Preferred Date</label>
+            <div class="col-sm-8">
+              <p class="form-control-plaintext">
+                {{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : '' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label fw-bold">Notes</label>
+            <div class="col-sm-8">
+              <p class="form-control-plaintext">{{ servicebooking.notes ?: '—' }}</p>
+            </div>
+          </div>
+
+          <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label fw-bold">Created At</label>
+            <div class="col-sm-8">
+              <p class="form-control-plaintext">
+                {{ servicebooking.createdat ? servicebooking.createdat|date('Y-m-d H:i:s') : '' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Buttons in one line -->
+          <div class="d-flex justify-content-start gap-2 mt-4">
+            <a href="{{ path('app_servicebooking_index') }}" class="btn btn-secondary">Back to List</a>
+            <a href="{{ path('app_servicebooking_edit', {'id': servicebooking.id}) }}" class="btn btn-warning">Edit</a>
+            {{ include('servicebooking/_delete_form.html.twig') }}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

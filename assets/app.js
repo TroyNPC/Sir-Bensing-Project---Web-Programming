@@ -1,3 +1,4 @@
+import './bootstrap.js';
 /*
  * Welcome to your app's main JavaScript file!
  *
@@ -8,8 +9,12 @@
 // any CSS you import will output into a single css file (app.css in this case)
 import './styles/app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap';
 
+// start the Stimulus application
+import './bootstrap';
+
+// enable the interactive UI components from Flowbite
+import 'flowbite';
 console.log('yes')
 
 const links = [document.getElementById('homebutton'),

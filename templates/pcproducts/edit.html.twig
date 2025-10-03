@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit PC Product{% endblock %}
+
+{% block body %}
+
+{% form_theme form 'form/form_theme.html.twig' %}
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow rounded-3 border-0">
+        <div class="card-body p-4">
+          <h2 class="fw-bold text-center mb-4">Edit PC Product</h2>
+
+          {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+          <!-- CURRENT IMAGE -->
+          <div class="mb-3 text-center">
+            {% if pcproduct.image %}
+                <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}" 
+                     alt="{{ pcproduct.name }}" 
+                     class="img-thumbnail mb-2" 
+                     style="max-height: 200px; object-fit: cover;">
+            {% else %}
+                <span class="text-muted">No Image Available</span>
+            {% endif %}
+          </div>
+
+          <!-- IMAGE UPLOAD -->
+          <div class="mb-3">
+            {{ form_label(form.image, 'Change Product Image', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.image, { 'attr': {'class': 'form-control'} }) }}
+            {{ form_errors(form.image) }}
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(form.name, 'Product Name', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.name, { 'attr': {'class': 'form-control', 'placeholder': 'Enter product name'} }) }}
+            {{ form_errors(form.name) }}
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(form.category, 'Category', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.category, { 'attr': {'class': 'form-select'} }) }}
+            {{ form_errors(form.category) }}
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(form.brand, 'Brand', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.brand, { 'attr': {'class': 'form-select'} }) }}
+            {{ form_errors(form.brand) }}
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(form.price, 'Price', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.price, { 'attr': {'class': 'form-control', 'placeholder': 'Enter price'} }) }}
+            {{ form_errors(form.price) }}
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(form.description, 'Description', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+            {{ form_widget(form.description, { 'attr': {'class': 'form-control', 'placeholder': 'Enter product description'} }) }}
+            {{ form_errors(form.description) }}
+          </div>
+
+          <div class="mb-3 row">
+            <div class="col">
+              {{ form_label(form.createdat, 'Created At', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+              {{ form_widget(form.createdat, { 'attr': {'class': 'form-control'} }) }}
+              {{ form_errors(form.createdat) }}
+            </div>
+            <div class="col">
+              {{ form_label(form.updatedat, 'Updated At', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+              {{ form_widget(form.updatedat, { 'attr': {'class': 'form-control'} }) }}
+              {{ form_errors(form.updatedat) }}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-warning w-100 mt-3">Update Product</button>
+
+          {{ form_end(form) }}
+
+          <p class="text-center mt-3">
+            <a href="{{ path('app_pcproducts_index') }}" class="text-secondary fw-bold">
+                Back to Products
+            </a>
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}User{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body">
+                    <h2 class="fw-bold text-center mb-4">User Details</h2>
+
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Id</th>
+                                <td>{{ user.id }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Email</th>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Password</th>
+                                <td>
+                                    <span class="password-mask">****</span>
+                                    <span class="password-real d-none">{{ user.password }}</span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary toggle-password" title="Show/Hide">👁️</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Roles</th>
+                                <td>
+                                    <span class="badge bg-primary">{{ user.roles ? user.roles|json_encode : '' }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Fullname</th>
+                                <td>{{ user.fullname }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Phone Number</th>
+                                <td>{{ user.phoneNumber }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Address</th>
+                                <td>{{ user.address }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    {# Inline buttons #}
+                    <div class="d-flex justify-content-center gap-2 mt-4">
+                        <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary">← Back to list</a>
+                        <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-warning">Edit</a>
+                        {{ include('user/_delete_form.html.twig') }}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# JS for toggling password visibility #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.querySelector('.toggle-password');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            const cell = btn.parentElement;
+            const mask = cell.querySelector('.password-mask');
+            const real = cell.querySelector('.password-real');
+
+            mask.classList.toggle('d-none');
+            real.classList.toggle('d-none');
+        });
+    }
+});
+</script>
+{% endblock %}
