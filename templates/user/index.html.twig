@@ -1,64 +1,62 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}User Index{% endblock %}
+{% block title %}User index{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-5">
-    <h1 class="mb-4 text-center text-primary">User Index</h1>
+<div class="container-fluid mt-5"> {# full width #}
+    <h1 class="mb-4 text-center">User Index</h1>
 
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle text-center mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th scope="col">Id</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Password</th>
-                            <th scope="col">Roles</th>
-                            <th scope="col">Fullname</th>
-                            <th scope="col">Phone Number</th>
-                            <th scope="col">Address</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for user in users %}
-                        <tr>
-                            <td>{{ user.id }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>
-                                <span class="password-mask">****</span>
-                                <span class="password-real d-none">{{ user.password }}</span>
-                                <button type="button" class="btn btn-sm btn-outline-secondary toggle-password" title="Show/Hide">👁️</button>
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">
-                                    {{ user.roles ? user.roles|json_encode : '' }}
-                                </span>
-                            </td>
-                            <td>{{ user.fullname }}</td>
-                            <td>{{ user.phoneNumber }}</td>
-                            <td>{{ user.address }}</td>
-                            <td>
-                                <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-sm btn-outline-info me-1">Show</a>
-                                <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-warning me-1">Edit</a>
-                                {{ include('user/_delete_form.html.twig', { user: user }) }}
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">No records found</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            <table class="table table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Password</th>
+                        <th scope="col">Roles</th>
+                        <th scope="col">Fullname</th>
+                        <th scope="col">Phone Number</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="password-mask">****</span>
+                            <span class="password-real d-none">{{ user.password }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary toggle-password" title="Show/Hide">👁️</button>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ user.roles ? user.roles|json_encode : '' }}
+                            </span>
+                        </td>
+                        <td>{{ user.fullname }}</td>
+                        <td>{{ user.phoneNumber }}</td>
+                        <td>{{ user.address }}</td>
+                        <td>
+                            <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-sm btn-outline-info me-1">Show</a>
+                            <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-warning me-1">Edit</a>
+                            {{ include('user/_delete_form.html.twig', { user: user }) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-muted text-center py-4">No records found</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <div class="mt-4 text-center">
-        <a href="{{ path('app_user_new') }}" class="btn btn-success btn-lg shadow">➕ Create New</a>
+        <a href="{{ path('app_user_new') }}" class="btn btn-success btn-lg shadow">➕ Create new</a>
     </div>
 </div>
 

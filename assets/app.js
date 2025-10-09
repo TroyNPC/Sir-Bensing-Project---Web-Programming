@@ -7,33 +7,13 @@ import './bootstrap.js';
  */
 
 // any CSS you import will output into a single css file (app.css in this case)
+// assets/app.js
 import './styles/app.css';
+
+// Import Bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-// start the Stimulus application
-import './bootstrap';
-
-// enable the interactive UI components from Flowbite
-import 'flowbite';
-console.log('yes')
-
-const links = [document.getElementById('homebutton'),
-document.getElementById('aboutbutton'),
-document.getElementById('homebutton'),
-document.getElementById('aboutbutton'),
-document.getElementById('contact')
-];
-
-  document.addEventListener("DOMContentLoaded", function () {
-    const navbarCollapse = document.getElementById("navbarContent");
-    const navLinks = document.querySelectorAll(".nav-link, .btn, .form-control");
-
-    navLinks.forEach(link => {
-      link.addEventListener("click", () => {
-        if (navbarCollapse.classList.contains("show")) {
-          new bootstrap.Collapse(navbarCollapse).hide();
-        }
-      });
-    });
-  });
+import 'bootstrap';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+// You can add your custom JS below
+console.log('Bootstrap loaded successfully!');
 

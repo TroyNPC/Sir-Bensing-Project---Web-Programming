@@ -63,6 +63,8 @@ class PcproductsType extends AbstractType
             ->add('description')
             ->add('isavailable')
             ->add('createdat', null, [
+                'disabled' => true,
+                'data' => new \DateTimeImmutable(),
                 'widget' => 'single_text',
             ])
             ->add('updatedat', null, [

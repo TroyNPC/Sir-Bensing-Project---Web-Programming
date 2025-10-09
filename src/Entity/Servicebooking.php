@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ServicebookingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ServicebookingRepository::class)]
 class Servicebooking
@@ -15,6 +16,11 @@ class Servicebooking
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Name is required!')]
+    #[Assert\Regex(
+        pattern: '/^[A-Za-z\s]+$/',
+        message: 'Name can only contain letters and spaces.'
+    )]
     private ?string $customerName = null;
 
     #[ORM\Column(length: 255)]
@@ -101,9 +107,9 @@ class Servicebooking
         return $this;
     }
 
-    public function getCreatedat(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createdat;
+        return $this->createdAt;
     }
 
     public function setCreatedat(\DateTimeImmutable $createdat): static

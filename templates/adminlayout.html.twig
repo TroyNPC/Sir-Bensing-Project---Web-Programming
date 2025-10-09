@@ -1,0 +1,248 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="logo">
+      <img src="{{ asset('Icon.png') }}" alt="Logo"
+           style="width: 50px; height: 40px; filter: grayscale(1) brightness(0) invert(1);">
+      <h4 style="color: #F88F6A;">NexusCore</h4>
+    </div>
+
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a href="{{ path('app_admindashboard') }}"
+           class="nav-link {% if app.request.get('_route') == 'app_admindashboard' %}active{% endif %}">
+           <i class="bi bi-speedometer2 me-2"></i> Dashboard
+        </a>
+      </li>
+
+      <!-- Products -->
+      <li class="nav-item">
+        <button class="nav-link d-flex justify-content-between align-items-center w-100 border-0 bg-transparent"
+                type="button" data-bs-toggle="collapse" data-bs-target="#productsMenu"
+                aria-expanded="false" aria-controls="productsMenu">
+          <span><i class="bi bi-box-seam me-2"></i> Products</span>
+          <i class="bi bi-chevron-down small toggle-icon"></i>
+        </button>
+        <div class="collapse {% if 'pcproducts' in app.request.get('_route') %}show{% endif %}" id="productsMenu">
+          <a href="{{ path('app_pcproducts_index') }}"
+             class="nav-link {% if app.request.get('_route') == 'app_pcproducts_index' %}active{% endif %}">
+            <i class="bi bi-list-ul me-2"></i> Product List
+          </a>
+          <a href="{{ path('app_pcproducts_new') }}"
+             class="nav-link {% if app.request.get('_route') == 'app_pcproducts_new' %}active{% endif %}">
+            <i class="bi bi-plus-circle me-2"></i> Add Product
+          </a>
+        </div>
+      </li>
+
+      <!-- Users -->
+      <li class="nav-item">
+        <button class="nav-link d-flex justify-content-between align-items-center w-100 border-0 bg-transparent"
+                type="button" data-bs-toggle="collapse" data-bs-target="#usersMenu"
+                aria-expanded="false" aria-controls="usersMenu">
+          <span><i class="bi bi-people me-2"></i> Users</span>
+          <i class="bi bi-chevron-down small toggle-icon"></i>
+        </button>
+        <div class="collapse {% if 'user' in app.request.get('_route') %}show{% endif %}" id="usersMenu">
+          <a href="{{ path('app_user_index') }}"
+             class="nav-link {% if app.request.get('_route') == 'app_user_index' %}active{% endif %}">
+            <i class="bi bi-list-check me-2"></i> User List
+          </a>
+          <a href="{{ path('app_user_new') }}"
+             class="nav-link {% if app.request.get('_route') == 'app_user_new' %}active{% endif %}">
+            <i class="bi bi-person-plus me-2"></i> Add User
+          </a>
+        </div>
+      </li>
+
+      <!-- Service Booking -->
+      <li class="nav-item">
+        <a href="{{ path('app_servicebooking_index') }}"
+           class="nav-link {% if app.request.get('_route') == 'app_servicebooking_index' %}active{% endif %}">
+           <i class="bi bi-calendar-check me-2"></i> Service Booking
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Header -->
+  <div class="admin-header shifted d-flex align-items-center justify-content-between px-4 py-2" id="adminHeader">
+    <div class="d-flex align-items-center">
+      <button id="toggleSidebar" class="btn btn-link text-white me-3 fs-4">
+        <i class="bi bi-list"></i>
+      </button>
+      <h5 class="mb-0 fw-bold" style="color: var(--accent);">Welcome Admin User!</h5>
+    </div>
+
+    <div class="dropdown">
+      <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+        <img src="{{ asset('profile.jpg') }}" alt="Profile" class="rounded-circle me-2" width="35" height="35">
+        <span class="fw-bold" style="color: var(--accent);">Admin</span>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-end shadow">
+        <li><a class="dropdown-item" href="#">Account Settings</a></li>
+        <li><a class="dropdown-item" href="#">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main Admin Content -->
+  <div class="main-content expanded" id="mainContent">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.getElementById('mainContent');
+  const header = document.getElementById('adminHeader');
+  const toggleBtn = document.getElementById('toggleSidebar');
+
+  // Sidebar starts hidden
+  sidebar.classList.add('collapsed');
+  mainContent.classList.add('expanded');
+  header.classList.add('shifted');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded');
+    header.classList.toggle('shifted');
+  });
+
+  // Animate dropdown arrows
+  document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+    const icon = button.querySelector('.toggle-icon');
+    const target = document.querySelector(button.getAttribute('data-bs-target'));
+    if (target) {
+      target.addEventListener('show.bs.collapse', () => icon.style.transform = 'rotate(180deg)');
+      target.addEventListener('hide.bs.collapse', () => icon.style.transform = 'rotate(0deg)');
+    }
+  });
+});
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+:root {
+  --dark-bg: #2E2E2E;
+  --accent: #F88F6A;
+  --light-bg: #f5f5f5;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+}
+
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background-color: var(--dark-bg);
+  color: white;
+  padding: 1rem;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+.sidebar.collapsed {
+  transform: translateX(0);
+}
+
+/* Header */
+.admin-header {
+  background-color: var(--dark-bg);
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 240px;
+  right: 0;
+  height: 65px;
+  z-index: 999;
+  transition: left 0.3s ease;
+}
+.admin-header.shifted {
+  left: 0;
+}
+
+/* Main content */
+.main-content {
+  margin-left: 240px;
+  margin-top: 65px;
+  padding: 2rem;
+  background-color: var(--light-bg);
+  transition: margin-left 0.3s ease;
+  min-height: calc(100vh - 65px);
+}
+.main-content.expanded {
+  margin-left: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.collapsed {
+    transform: translateX(0);
+  }
+  .admin-header {
+    left: 0 !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* Sidebar items */
+.sidebar .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.sidebar .nav-link {
+  color: #ccc;
+  text-decoration: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.sidebar .nav-link:hover {
+  background-color: rgba(248, 143, 106, 0.15);
+  color: #fff;
+}
+.sidebar .nav-link.active {
+  background-color: var(--accent);
+  color: #2E2E2E;
+  font-weight: 600;
+}
+.sidebar .collapse a {
+  padding-left: 2.5rem;
+  font-size: 0.9rem;
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+/* Dropdown */
+.dropdown-menu {
+  font-size: 0.9rem;
+}
+</style>
+{% endblock %}

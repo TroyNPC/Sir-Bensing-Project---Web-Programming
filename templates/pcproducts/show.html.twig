@@ -27,7 +27,7 @@
                         <span class="badge bg-info text-dark">{{ pcproduct.category }}</span>
                     </p>
                     <p><strong>Brand:</strong> {{ pcproduct.brand }}</p>
-                    <p><strong>Price:</strong> ${{ pcproduct.price|number_format(2, '.', ',') }}</p>
+                    <p><strong>Price:</strong> P{{ pcproduct.price|number_format(2, '.', ',') }}</p>
                     <p><strong>Description:</strong><br> {{ pcproduct.description }}</p>
                     <p>
                         <strong>Created At:</strong> {{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d H:i:s') : '' }}<br>
