@@ -4,8 +4,10 @@ namespace App\Entity;
 
 use App\Repository\PcproductsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PcproductsRepository::class)]
+#[ORM\HasLifecycleCallbacks] // ✅ keeps PrePersist working
 class Pcproducts
 {
     #[ORM\Id]
@@ -14,34 +16,41 @@ class Pcproducts
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Product name cannot be empty.")]
     private ?string $name = null;
 
-    // Category field (dropdown values)
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Category cannot be empty.")]
     private ?string $category = null;
 
-    // Brand field (dropdown values)
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Brand cannot be empty.")]
     private ?string $brand = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Price cannot be empty.")]
+    #[Assert\Regex(
+        pattern: "/^[0-9]+(\.[0-9]{1,2})?$/",
+        message: "Price must be a valid number (letters are not allowed)."
+    )]
     private ?float $price = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Description cannot be empty.")]
     private ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdat = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $updatedat = null;
 
     #[ORM\Column]
     private ?bool $isavailable = null;
 
-    // Image field
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
 
     // ----------------- GETTERS & SETTERS -----------------
     public function getId(): ?int
@@ -146,5 +155,12 @@ class Pcproducts
     {
         $this->image = $image;
         return $this;
+    }
+
+    // ----------------- AUTO DATE HANDLER -----------------
+    #[ORM\PrePersist] // ✅ Automatically set only when creating
+    public function onPrePersist(): void
+    {
+        $this->createdat = new \DateTimeImmutable();
     }
 }

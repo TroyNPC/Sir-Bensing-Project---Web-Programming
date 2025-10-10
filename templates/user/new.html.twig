@@ -1,64 +1,89 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New User{% endblock %}
+{% block title %}Create Account{% endblock %}
 
 {% block body %}
-
 {% form_theme form 'form/form_theme.html.twig' %}
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow rounded-3 border-0">
-        <div class="card-body p-4">
-          <h2 class="fw-bold text-center mb-4">Create Your Account</h2>
+<div class="container-fluid py-5" style="max-width: 600px; margin: 0 auto;">
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-4">
+      <h3 class="fw-bold text-center mb-4" style="color:#2e2e2e;">Create Your Account</h3>
 
-          {{ form_start(form) }}
+      {{ form_start(form) }}
 
-          <div class="mb-3">
-            {{ form_label(form.fullname, 'Full Name', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.fullname, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your full name'} }) }}
-            {{ form_errors(form.fullname) }}
-          </div>
+      <!-- FULL NAME -->
+      <div class="mb-3">
+        {{ form_label(form.fullname, 'Full Name', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.fullname, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your full name'} }) }}
+        {{ form_errors(form.fullname) }}
+      </div>
 
-          <div class="mb-3">
-            {{ form_label(form.email, 'Email', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.email, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your email address'} }) }}
-            {{ form_errors(form.email) }}
-          </div>
+      <!-- EMAIL -->
+      <div class="mb-3">
+        {{ form_label(form.email, 'Email', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.email, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your email address'} }) }}
+        {{ form_errors(form.email) }}
+      </div>
 
-          <div class="mb-3">
-            {{ form_label(form.password, 'Password', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.password, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your password'} }) }}
-            {{ form_errors(form.password) }}
-          </div>
+      <!-- PASSWORD -->
+      <div class="mb-3">
+        {{ form_label(form.password, 'Password', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.password, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your password'} }) }}
+        {{ form_errors(form.password) }}
+      </div>
 
-          <div class="mb-3">
-            {{ form_label(form.phoneNumber, 'Phone Number', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.phoneNumber, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your phone number'} }) }}
-            {{ form_errors(form.phoneNumber) }}
-          </div>
+      <!-- PHONE NUMBER -->
+      <div class="mb-3">
+        {{ form_label(form.phoneNumber, 'Phone Number', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.phoneNumber, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your phone number'} }) }}
+        {{ form_errors(form.phoneNumber) }}
+      </div>
 
-          <div class="mb-3">
-            {{ form_label(form.address, 'Address', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.address, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your full address'} }) }}
-            {{ form_errors(form.address) }}
-          </div>
+      <!-- ADDRESS -->
+      <div class="mb-3">
+        {{ form_label(form.address, 'Address', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.address, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your full address'} }) }}
+        {{ form_errors(form.address) }}
+      </div>
 
-          <button type="submit" class="btn btn-orange w-100 mt-3">Register</button>
+      <!-- SUBMIT -->
+      <div class="text-center mt-3">
+        <button type="submit"
+                class="btn fw-semibold px-4 py-2 w-100"
+                style="background-color:#F88F6A; color:white; border:none; border-radius:6px; font-size:0.95rem;">
+          ➕ Create Account
+        </button>
+      </div>
 
-          {{ form_end(form) }}
-<p class="text-center mt-3">
-    Already have an account?
-    <a href="{{ path('app_login') }}" class="text-orange fw-bold">
-        Login
-    </a>
-</p>
+      {{ form_end(form) }}
 
-        </div>
+      <!-- LOGIN LINK -->
+      <div class="text-center mt-3">
+        <p style="color:#2e2e2e;">Already have an account?
+          <a href="{{ path('app_login') }}" class="text-orange fw-bold" style="color:#F88F6A;">Login</a>
+        </p>
       </div>
     </div>
   </div>
 </div>
 
+<style>
+.card {
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.form-label {
+  color: #2e2e2e;
+}
+
+.btn:hover {
+  background-color: #e37453 !important;
+}
+
+main, .main-content, .container-fluid {
+  overflow: visible !important;
+}
+</style>
 {% endblock %}

@@ -1,19 +1,21 @@
-import './bootstrap.js';
-/*
- * Welcome to your app's main JavaScript file!
- *
- * We recommend including the built version of this JavaScript file
- * (and its CSS file) in your base layout (base.html.twig).
- */
-
-// any CSS you import will output into a single css file (app.css in this case)
 // assets/app.js
+import './bootstrap.js';
 import './styles/app.css';
 
-// Import Bootstrap
+// ✅ jQuery first
+import $ from 'jquery';
+window.$ = window.jQuery = $;
+
+// ✅ Bootstrap (optional but usually needed)
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-// You can add your custom JS below
-console.log('Bootstrap loaded successfully!');
 
+// ✅ DataTables core + Bootstrap 5
+import 'datatables.net-bs5';
+import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+
+// ✅ DataTables Responsive extension
+import 'datatables.net-responsive-bs5';
+import 'datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css';
+
+console.log('✅ DataTables responsive loaded');

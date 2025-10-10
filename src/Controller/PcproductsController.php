@@ -32,30 +32,36 @@ final class PcproductsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // ✅ Reset AUTO_INCREMENT only if table is empty
+            $count = $entityManager->getRepository(Pcproducts::class)->count([]);
+            if ($count === 0) {
+                $connection = $entityManager->getConnection();
+                $connection->executeStatement('ALTER TABLE pcproducts AUTO_INCREMENT = 1;');
+            }
 
-            // Handle image upload
+            // ✅ Handle image upload
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
                     $imageFile->move(
                         $this->getParameter('products_images_directory'),
                         $newFilename
                     );
+                    $pcproduct->setImage($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Failed to upload image.');
+                    $this->addFlash('error', '❌ Failed to upload image.');
                 }
-
-                $pcproduct->setImage($newFilename);
             }
 
             $entityManager->persist($pcproduct);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_pcproducts_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', '✅ Product added successfully!');
+            return $this->redirectToRoute('app_pcproducts_index');
         }
 
         return $this->render('pcproducts/new.html.twig', [
@@ -64,11 +70,22 @@ final class PcproductsController extends AbstractController
         ]);
     }
 
+    // ✅ Regular full-page "Show"
     #[Route('/{id}', name: 'app_pcproducts_show', methods: ['GET'])]
     public function show(Pcproducts $pcproduct): Response
     {
         return $this->render('pcproducts/show.html.twig', [
             'pcproduct' => $pcproduct,
+        ]);
+    }
+
+    // ✅ NEW: Modal-friendly "Show" route (for AJAX modal loading)
+    #[Route('/{id}/modal', name: 'app_pcproducts_show_modal', methods: ['GET'])]
+    public function showModal(Pcproducts $pcproduct): Response
+    {
+        return $this->render('pcproducts/show.html.twig', [
+            'pcproduct' => $pcproduct,
+            'isModal' => true, // 👈 used by Twig to hide layout and buttons
         ]);
     }
 
@@ -79,29 +96,35 @@ final class PcproductsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            // Handle image upload on edit
+            // ✅ Handle new image upload only if a new file is selected
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
                     $imageFile->move(
                         $this->getParameter('products_images_directory'),
                         $newFilename
                     );
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Failed to upload image.');
-                }
 
-                $pcproduct->setImage($newFilename);
+                    // 🧹 Delete old image if exists
+                    $oldImage = $pcproduct->getImage();
+                    if ($oldImage && file_exists($this->getParameter('products_images_directory') . '/' . $oldImage)) {
+                        @unlink($this->getParameter('products_images_directory') . '/' . $oldImage);
+                    }
+
+                    $pcproduct->setImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', '❌ Failed to upload new image.');
+                }
             }
 
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_pcproducts_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', '✅ Product updated successfully!');
+            return $this->redirectToRoute('app_pcproducts_index');
         }
 
         return $this->render('pcproducts/edit.html.twig', [
@@ -111,11 +134,25 @@ final class PcproductsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_pcproducts_delete', methods: ['POST'])]
-    public function delete(Request $request, Pcproducts $pcproduct, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, EntityManagerInterface $entityManager, PcproductsRepository $repo, int $id): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$pcproduct->getId(), $request->request->get('_token'))) {
+        $pcproduct = $repo->find($id);
+
+        if (!$pcproduct) {
+            $this->addFlash('error', '⚠️ Product not found or already deleted.');
+            return $this->redirectToRoute('app_pcproducts_index');
+        }
+
+        if ($this->isCsrfTokenValid('delete' . $pcproduct->getId(), $request->getPayload()->getString('_token'))) {
+            // 🧹 Delete image from filesystem if exists
+            $oldImage = $pcproduct->getImage();
+            if ($oldImage && file_exists($this->getParameter('products_images_directory') . '/' . $oldImage)) {
+                @unlink($this->getParameter('products_images_directory') . '/' . $oldImage);
+            }
+
             $entityManager->remove($pcproduct);
             $entityManager->flush();
+            $this->addFlash('success', '🗑️ Product deleted successfully!');
         }
 
         return $this->redirectToRoute('app_pcproducts_index', [], Response::HTTP_SEE_OTHER);

@@ -51,8 +51,8 @@
              class="nav-link {% if app.request.get('_route') == 'app_user_index' %}active{% endif %}">
             <i class="bi bi-list-check me-2"></i> User List
           </a>
-          <a href="{{ path('app_user_new') }}"
-             class="nav-link {% if app.request.get('_route') == 'app_user_new' %}active{% endif %}">
+          <a href="{{ path('app_user_add_admin') }}"
+             class="nav-link {% if app.request.get('_route') == 'app_user_add_admin' %}active{% endif %}">
             <i class="bi bi-person-plus me-2"></i> Add User
           </a>
         </div>
@@ -83,7 +83,7 @@
         <span class="fw-bold" style="color: var(--accent);">Admin</span>
       </a>
       <ul class="dropdown-menu dropdown-menu-end shadow">
-        <li><a class="dropdown-item" href="#">Account Settings</a></li>
+        <li><a class="dropdown-item" href="#">Account Settings</a></li>.
         <li><a class="dropdown-item" href="#">Logout</a></li>
       </ul>
     </div>
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const toggleBtn = document.getElementById('toggleSidebar');
 
   // Sidebar starts hidden
-  sidebar.classList.add('collapsed');
+  sidebar.classList.remove('collapsed');
   mainContent.classList.add('expanded');
   header.classList.add('shifted');
 
@@ -169,16 +169,24 @@ body {
   color: white;
   position: fixed;
   top: 0;
-  left: 240px;
-  right: 0;
-  height: 65px;
-  z-index: 999;
-  transition: left 0.3s ease;
-}
-.admin-header.shifted {
   left: 0;
+  height: 65px;
+  width: calc(100% - 240px);
+  margin-left: 240px;
+  z-index: 999;
+  transition: all 0.3s ease;
+  box-shadow: none;
 }
 
+.admin-header.shifted {
+  margin-left: 0;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+body{
+  background-color: var(--light-bg);
+}
 /* Main content */
 .main-content {
   margin-left: 240px;
@@ -201,7 +209,8 @@ body {
     transform: translateX(0);
   }
   .admin-header {
-    left: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
   }
   .main-content {
     margin-left: 0 !important;

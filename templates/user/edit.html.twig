@@ -1,87 +1,124 @@
-{% extends 'base.html.twig' %}
+{% extends 'adminlayout.html.twig' %}
 
 {% block title %}Edit User{% endblock %}
 
-{% block body %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-6 col-md-8">
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-body p-5">
-                    <h2 class="text-center text-primary mb-4">Edit User</h2>
+{% block content %}
 
-                    {{ form_start(form) }}
+{% form_theme form 'form/form_theme.html.twig' %}
 
-                    {# Fullname #}
-                    <div class="mb-3">
-                        {{ form_label(form.fullname, 'Full Name', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.fullname, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.fullname) }}
-                    </div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow rounded-3 border-0">
+        <div class="card-body p-4">
+          <h2 class="fw-bold text-center mb-4">Edit User</h2>
 
-                    {# Email #}
-                    <div class="mb-3">
-                        {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.email) }}
-                    </div>
+          {{ form_start(form) }}
 
-                    {# Password #}
-                    <div class="mb-3">
-                        {{ form_label(form.password, 'Password', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.password, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.password) }}
-                    </div>
+          <!-- FULL NAME -->
+          <div class="mb-3">
+            {{ form_label(form.fullname, 'Full Name', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+            {{ form_widget(form.fullname, {'attr': {'class': 'form-control', 'placeholder': 'Enter full name'}}) }}
+            {{ form_errors(form.fullname) }}
+          </div>
 
-                    {# Phone Number #}
-                    <div class="mb-3">
-                        {{ form_label(form.phoneNumber, 'Phone Number', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.phoneNumber, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.phoneNumber) }}
-                    </div>
+          <!-- EMAIL -->
+          <div class="mb-3">
+            {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+            {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'Enter email'}}) }}
+            {{ form_errors(form.email) }}
+          </div>
 
-                    {# Address #}
-                    <div class="mb-3">
-                        {{ form_label(form.address, 'Address', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.address, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
-                        {{ form_errors(form.address) }}
-                    </div>
+          <!-- PASSWORD -->
+          <div class="mb-3">
+            {{ form_label(form.password, 'Password', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+            {{ form_widget(form.password, {'attr': {'class': 'form-control', 'placeholder': 'Enter password'}}) }}
+            {{ form_errors(form.password) }}
+          </div>
 
-                    {# Submit button #}
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        {{ include('pcproducts/_form.html.twig', {'button_label': 'Update'}) }}
+          <!-- PHONE NUMBER -->
+          <div class="mb-3">
+            {{ form_label(form.phoneNumber, 'Phone Number', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+            {{ form_widget(form.phoneNumber, {'attr': {'class': 'form-control', 'placeholder': 'Enter phone number'}}) }}
+            {{ form_errors(form.phoneNumber) }}
+          </div>
 
-                        <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary">⬅ Back to list</a>
+          <!-- ADDRESS -->
+          <div class="mb-3">
+            {{ form_label(form.address, 'Address', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+            {{ form_widget(form.address, {'attr': {'class': 'form-control', 'rows': '3', 'placeholder': 'Enter address'}}) }}
+            {{ form_errors(form.address) }}
+          </div>
 
-                        {{ include('user/_delete_form.html.twig') }}
-                    </div>
+          <!-- ROLE SELECT -->
+<!-- ROLE RADIO BUTTONS INLINE -->
+<div class="mb-3">
+  <label class="form-label fw-bold">Role</label>
+  <div class="d-flex gap-3">
+    {% for child in form.roles %}
+      <div class="form-check form-check-inline">
+        {{ form_widget(child, {'attr': {'class': 'form-check-input'}}) }}
+        {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}}) }}
+      </div>
+    {% endfor %}
+  </div>
+  {{ form_errors(form.roles) }}
+</div>
 
-                    {{ form_end(form) }}
-                </div>
-            </div>
+
+          <!-- SUBMIT + BACK + DELETE -->
+          <div class="d-flex justify-content-center gap-2 flex-wrap mt-4">
+            <button type="submit" class="btn fw-semibold px-4 py-2"
+                    style="background-color:#F88F6A; color:white; border:none; border-radius:6px; font-size:0.95rem;">
+              Update User
+            </button>
+
+          {{ form_end(form) }}
+                <a href="{{ path('app_user_index') }}" class="btn fw-semibold px-4 py-2"
+               style="background-color:#2e2e2e; color:white; border:none; border-radius:6px; font-size:0.95rem;">
+              ⬅ Back to list
+            </a>
+
+            {{ include('user/_delete_form.html.twig', {'user': user}) }}
+          </div>
+
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <style>
-    .card-body .form-control {
-        width: 100%;
-    }
+  .card-body .form-control,
+  .card-body .form-select {
+      width: 100%;
+  }
 
-    .card-body .form-label {
-        margin-bottom: 0.5rem;
-    }
+  .card-body .form-label {
+      margin-bottom: 0.5rem;
+  }
 
-    .card-body .mb-3 {
-        margin-bottom: 1.5rem;
-    }
+  .card-body .mb-3 {
+      margin-bottom: 1.5rem;
+  }
 
-    .card-body h2 {
-        font-weight: 600;
-    }
+  .card-body h2 {
+      font-weight: 600;
+  }
 
-    .d-flex .btn + .btn {
-        margin-left: 0.5rem;
-    }
+  .d-flex .btn + .btn {
+      margin-left: 0.5rem;
+  }
+
+  .d-flex.flex-wrap .btn {
+      flex: 1 1 auto;
+      min-width: 120px;
+      text-align: center;
+  }
+
+  .btn:hover {
+      opacity: 0.9;
+  }
 </style>
+
 {% endblock %}

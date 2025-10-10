@@ -22,8 +22,9 @@ class User
     #[ORM\Column(length: 100)]
     private ?string $password = null;
 
-    #[ORM\Column]
-    private array $roles = [];
+    // Single role stored as string, matches your database column
+    #[ORM\Column(type: "string", length: 20)]
+    private ?string $roles = null;
 
     #[ORM\Column(length: 200)]
     private ?string $fullname = null;
@@ -58,7 +59,6 @@ class User
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -70,19 +70,21 @@ class User
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
-    public function getRoles(): array
+    public function getRoles(): ?string
     {
         return $this->roles;
     }
 
-    public function setRoles(array $roles): self
+    public function setRoles(string $roles): static
     {
+        $allowedRoles = ['ROLE_ADMIN', 'ROLE_CUSTOMER'];
+        if (!in_array($roles, $allowedRoles, true)) {
+            throw new \InvalidArgumentException("Invalid role: $roles");
+        }
         $this->roles = $roles;
-
         return $this;
     }
 
@@ -94,7 +96,6 @@ class User
     public function setFullname(string $fullname): static
     {
         $this->fullname = $fullname;
-
         return $this;
     }
 
@@ -106,7 +107,6 @@ class User
     public function setPhoneNumber(?string $phoneNumber): static
     {
         $this->phoneNumber = $phoneNumber;
-
         return $this;
     }
 
@@ -118,13 +118,9 @@ class User
     public function setAddress(?string $address): static
     {
         $this->address = $address;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, Servicebooking>
-     */
     public function getServicebookings(): Collection
     {
         return $this->servicebookings;
@@ -136,19 +132,16 @@ class User
             $this->servicebookings->add($servicebooking);
             $servicebooking->setCustomername($this);
         }
-
         return $this;
     }
 
     public function removeServicebooking(Servicebooking $servicebooking): static
     {
         if ($this->servicebookings->removeElement($servicebooking)) {
-            // set the owning side to null (unless already changed)
             if ($servicebooking->getCustomername() === $this) {
                 $servicebooking->setCustomername(null);
             }
         }
-
         return $this;
     }
 }

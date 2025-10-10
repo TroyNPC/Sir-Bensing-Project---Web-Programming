@@ -1,79 +1,415 @@
-{% extends 'base.html.twig' %}
+{# templates/user/index.html.twig #}
+{% extends 'adminlayout.html.twig' %}
 
-{% block title %}User index{% endblock %}
+{% block title %}User Index{% endblock %}
 
-{% block body %}
-<div class="container-fluid mt-5"> {# full width #}
-    <h1 class="mb-4 text-center">User Index</h1>
+{% block content %}
+<div class="container-fluid py-5" style="max-width: 1400px; margin: 0 auto;">
 
-    <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-body">
-            <table class="table table-hover align-middle text-center">
-                <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Id</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Password</th>
-                        <th scope="col">Roles</th>
-                        <th scope="col">Fullname</th>
-                        <th scope="col">Phone Number</th>
-                        <th scope="col">Address</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for user in users %}
-                    <tr>
-                        <td>{{ user.id }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>
-                            <span class="password-mask">****</span>
-                            <span class="password-real d-none">{{ user.password }}</span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary toggle-password" title="Show/Hide">👁️</button>
-                        </td>
-                        <td>
-                            <span class="badge bg-primary">
-                                {{ user.roles ? user.roles|json_encode : '' }}
-                            </span>
-                        </td>
-                        <td>{{ user.fullname }}</td>
-                        <td>{{ user.phoneNumber }}</td>
-                        <td>{{ user.address }}</td>
-                        <td>
-                            <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-sm btn-outline-info me-1">Show</a>
-                            <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-sm btn-outline-warning me-1">Edit</a>
-                            {{ include('user/_delete_form.html.twig', { user: user }) }}
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="8" class="text-muted text-center py-4">No records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <!-- Header + Add Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">👤 User List</h3>
+
+        <!-- Open modal (instead of navigating to separate page) -->
+        <button type="button"
+                class="btn btn-sm px-4 py-2 shadow-sm fw-semibold"
+                style="background-color:#F88F6A; color:white; border-radius:8px;"
+                data-bs-toggle="modal"
+                data-bs-target="#addUserModal">
+            <i class="bi bi-plus-circle me-1"></i> Create New User
+        </button>
     </div>
 
-    <div class="mt-4 text-center">
-        <a href="{{ path('app_user_new') }}" class="btn btn-success btn-lg shadow">➕ Create new</a>
+    <!-- User Table -->
+    <div class="card border-0 shadow-sm rounded-4 mx-1">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="usersTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1200px;">
+                    <thead style="background-color:#F88F6A; color:white;">
+                        <tr class="text-center">
+                            <th class="fw-bold">ID</th>
+                            <th class="fw-bold">Email</th>
+                            <th class="fw-bold">Password</th>
+                            <th class="fw-bold">Roles</th>
+                            <th class="fw-bold">Fullname</th>
+                            <th class="fw-bold">Phone Number</th>
+                            <th class="fw-bold">Address</th>
+                            <th class="fw-bold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td class="text-center">{{ user.id }}</td>
+                            <td class="text-center">{{ user.email }}</td>
+
+                            <td class="text-center">
+                                <span class="password-mask" id="mask-{{ user.id }}">****</span>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary toggle-password"
+                                        data-user-id="{{ user.id }}"
+                                        title="Show/Hide">👁️</button>
+                            </td>
+
+                            <td class="text-center">
+                                <span class="badge rounded-pill text-white" style="background-color:#F88F6A;">{{ user.roles }}</span>
+                            </td>
+                            <td class="text-center">{{ user.fullname }}</td>
+                            <td class="text-center">{{ user.phoneNumber }}</td>
+                            <td class="text-center">{{ user.address }}</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <!-- Show modal (inline content) -->
+                                    <button type="button"
+                                            class="btn btn-sm fw-semibold"
+                                            style="background-color:#F88F6A; color:white; border-radius:6px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#showUserModal{{ user.id }}">
+                                        Show
+                                    </button>
+
+                                    <!-- Edit modal: lazy-load form via fetch -->
+                                    <button type="button"
+                                            class="btn btn-sm fw-semibold"
+                                            style="background-color:#2e2e2e; color:white; border-radius:6px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editUserModal{{ user.id }}"
+                                            data-url="{{ path('app_user_edit', {'id': user.id}) }}">
+                                        Edit
+                                    </button>
+
+                                    {{ include('user/_delete_form.html.twig', { user: user }) }}
+                                </div>
+                            </td>
+                        </tr>
+
+                        {# SHOW USER MODAL (built inline with server data) #}
+                        <div class="modal fade" id="showUserModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                          <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content border-0 rounded-4 shadow-lg">
+
+                              <div class="modal-header" style="background-color:#F88F6A; color:white;">
+                                <h5 class="modal-title fw-semibold">{{ user.fullname ?: user.email }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                              </div>
+
+                              <div class="modal-body p-4">
+                                  <div class="row">
+                                      <div class="col-md-6">
+                                          <ul class="list-unstyled small mb-0">
+                                              <li class="mb-2"><strong class="text-secondary">Email:</strong> <span class="fw-semibold">{{ user.email }}</span></li>
+                                              <li class="mb-2"><strong class="text-secondary">Roles:</strong> <span class="fw-semibold">{{ user.roles }}</span></li>
+                                              <li class="mb-2"><strong class="text-secondary">Full Name:</strong> <span class="fw-semibold">{{ user.fullname }}</span></li>
+                                              <li class="mb-2"><strong class="text-secondary">Phone:</strong> <span class="fw-semibold">{{ user.phoneNumber }}</span></li>
+                                              <li class="mb-2"><strong class="text-secondary">Address:</strong> <span class="fw-semibold">{{ user.address }}</span></li>
+                                          </ul>
+                                      </div>
+                                  </div>
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+
+                        {# EDIT MODAL (body lazy-loaded) #}
+                        <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4 shadow-lg">
+                                    <div class="modal-header" style="background-color:#2e2e2e; color:white;">
+                                        <h5 class="modal-title">Edit {{ user.fullname ?: user.email }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4" id="editUserModalBody{{ user.id }}">
+                                        <div class="text-center text-muted py-3">
+                                            <div class="spinner-border text-dark" role="status"></div>
+                                            <p class="mt-2 mb-0 small">Loading form...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">No records found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
-{# JS for toggling password visibility #}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const buttons = document.querySelectorAll('.toggle-password');
-    buttons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cell = btn.parentElement;
-            const mask = cell.querySelector('.password-mask');
-            const real = cell.querySelector('.password-real');
+{# ADD USER MODAL (lazy-loaded) #}
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+      <div class="modal-header" style="background-color:#F88F6A; color:white;">
+        <h5 class="modal-title fw-semibold">Create New User</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4" id="addUserModalBody">
+        <div class="text-center text-muted py-3">
+            <div class="spinner-border text-dark" role="status"></div>
+            <p class="mt-2 mb-0 small">Loading form...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-            mask.classList.toggle('d-none');
-            real.classList.toggle('d-none');
+<style>
+.card { background-color: #fff; overflow: hidden; }
+.table-hover tbody tr:hover { background-color: #f8f9fa; }
+.badge { font-weight: 500; }
+.form-check-input:checked {
+    background-color: #F88F6A !important;
+    border-color: #F88F6A !important;
+}
+.password-mask, .password-real { font-family: monospace; }
+</style>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // avoid DataTables errors in console
+    $.fn.dataTable.ext.errMode = 'none';
+
+    const $table = $('#usersTable');
+    const hasRealData = {{ users|length > 0 ? 'true' : 'false' }};
+    let dataTable = null;
+
+    if (hasRealData) {
+        // collect plaintext passwords into safe JS-escaped strings (you supplied them)
+        const userPasswords = {
+            {% for user in users %}
+            {{ user.id }}: "{{ user.password|e('js') }}"{% if not loop.last %},{% endif %}
+            {% endfor %}
+        };
+
+        dataTable = $table.DataTable({
+            responsive: true,
+            paging: true,
+            pageLength: 10,
+            lengthChange: false,
+            searching: true,
+            order: [[0, 'asc']],
+            columnDefs: [{ targets: "_all", className: 'text-center' }],
+            language: {
+                searchPlaceholder: "Search...",
+                search: "_INPUT_",
+                zeroRecords: "No matching users found",
+                infoEmpty: "No users available",
+                info: "Showing _START_ to _END_ of _TOTAL_ users",
+                paginate: { previous: "Prev", next: "Next" }
+            },
+            autoWidth: false
+        });
+
+        // Password toggle — delegated so it survives DataTables redraws
+        function attachPasswordToggle() {
+            $('#usersTable').off('click', '.toggle-password');
+            $('#usersTable').on('click', '.toggle-password', function() {
+                const btn = $(this);
+                const userId = btn.data('user-id');
+                const mask = $('#mask-' + userId);
+                mask.text(mask.text() === '****' ? userPasswords[userId] : '****');
+            });
+        }
+        attachPasswordToggle();
+        dataTable.on('draw', attachPasswordToggle);
+
+        // When DataTable fully inits, attach resize handlers safely
+        dataTable.on('init', function () {
+            // small delay to ensure styles/layout settled
+            setTimeout(() => {
+                try { dataTable.columns.adjust().responsive.recalc(); } catch(e) {}
+            }, 250);
+
+            // resize listener (safe — only called after init)
+            $(window).on('resize.userTable', function () {
+                try { dataTable.columns.adjust().responsive.recalc(); } catch(e) {}
+            });
+
+            // recalc after sidebar toggle (if you have a toggle button)
+            document.getElementById('toggleSidebar')?.addEventListener('click', () => {
+                setTimeout(() => {
+                    try { dataTable.columns.adjust().responsive.recalc(); } catch(e) {}
+                }, 420);
+            });
+        });
+    } else {
+        // No data — keep table fixed layout
+        $table.css({ 'min-width': '100%', 'table-layout': 'fixed' });
+    }
+
+    // ---------- ADD USER MODAL (lazy load form) ----------
+    const addUserModal = document.getElementById('addUserModal');
+    if (addUserModal) {
+        addUserModal.addEventListener('show.bs.modal', function () {
+            const modalBody = document.getElementById('addUserModalBody');
+            modalBody.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <div class="spinner-border text-dark"></div>
+                    <p class="mt-2 mb-0 small">Loading form...</p>
+                </div>`;
+            fetch("{{ path('app_user_add_admin') }}")
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const form = doc.querySelector('form');
+                    if (form) {
+                        // ensure correct action (server may already provide it)
+                        form.action = "{{ path('app_user_add_admin') }}";
+                        const submit = form.querySelector('button[type=\"submit\"]');
+                        if (submit) submit.classList.add('btn-warning', 'fw-semibold');
+                        modalBody.innerHTML = '';
+                        modalBody.appendChild(form);
+                    } else {
+                        modalBody.innerHTML = '<p class=\"text-danger\">Could not load add form.</p>';
+                    }
+                })
+                .catch(() => modalBody.innerHTML = '<p class=\"text-danger\">Failed to load form.</p>');
+        });
+    }
+
+    // ---------- EDIT USER MODALS (lazy load per row) ----------
+    document.querySelectorAll('[id^=\"editUserModal\"]').forEach(modal => {
+        modal.addEventListener('show.bs.modal', function (event) {
+            const id = this.id.replace('editUserModal', '');
+            const modalBody = document.getElementById('editUserModalBody' + id);
+            modalBody.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <div class="spinner-border text-dark"></div>
+                    <p class="mt-2 mb-0 small">Loading form...</p>
+                </div>`;
+
+            // get url from button that triggered the modal (data-url)
+            const button = event.relatedTarget;
+            const url = button?.getAttribute('data-url') || "{{ path('app_user_edit', {'id': 'ID_REPLACE'}) }}".replace('ID_REPLACE', id);
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const form = doc.querySelector('form');
+                    if (form) {
+                        form.action = url;
+                        const submit = form.querySelector('button[type=\"submit\"]');
+                        if (submit) submit.classList.add('btn-warning', 'fw-semibold');
+                        modalBody.innerHTML = '';
+                        modalBody.appendChild(form);
+                    } else {
+                        modalBody.innerHTML = '<p class=\"text-danger\">Could not load edit form.</p>';
+                    }
+                })
+                .catch(() => modalBody.innerHTML = '<p class=\"text-danger\">Failed to load form.</p>');
         });
     });
+
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    // 🎯 Exact regex patterns and messages from UserType.php
+    const validationRules = {
+        fullname: {
+            regex: /^[a-zA-Z\s]+$/,
+            messages: [
+                "Full name can only contain letters and spaces.",
+                "This field cannot be blank."
+            ]
+        },
+        email: {
+            regex: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+            messages: [
+                "Please enter a valid email address.",
+                "Email cannot be blank."
+            ]
+        },
+        password: {
+            regex: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+            messages: [
+                "Password must be at least 6 characters long.",
+                "Password must include both letters and numbers."
+            ]
+        },
+        phonenumber: {
+            regex: /^\+?\d{7,15}$/,
+            messages: [
+                "Enter a valid phone number (7–15 digits, optional + at start)."
+            ]
+        },
+        address: {
+            regex: /^[a-zA-Z0-9\s,.\-]*$/,
+            messages: [
+                "Address can only contain letters, numbers, spaces, commas, dots, and dashes."
+            ]
+        }
+    };
+
+    // 🔍 Attach validation to any input matching Symfony form names
+    const attachValidation = (input, rule) => {
+        const errorBox = document.createElement('div');
+        errorBox.classList.add('live-validation', 'mt-1');
+        input.insertAdjacentElement('afterend', errorBox);
+
+        input.addEventListener('input', () => {
+            const value = input.value.trim();
+            const isEmpty = value.length === 0;
+            const isValid = rule.regex.test(value);
+
+            if (isEmpty) {
+                errorBox.innerHTML = `<div class="text-danger small">❌ ${rule.messages[1] || "This field cannot be blank."}</div>`;
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                return;
+            }
+
+            if (isValid) {
+                errorBox.innerHTML = `<div class="text-success small">✅ Looks good!</div>`;
+                input.classList.add('is-valid');
+                input.classList.remove('is-invalid');
+            } else {
+                const list = rule.messages.map(m => `<div class="text-danger small">❌ ${m}</div>`).join('');
+                errorBox.innerHTML = list;
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+            }
+        });
+    };
+
+    // 🧠 Observer for dynamically loaded forms (Add/Edit user modals)
+    const observer = new MutationObserver(() => {
+        const inputs = document.querySelectorAll('form input');
+        inputs.forEach(input => {
+            const name = input.name.toLowerCase();
+            if (validationRules[name] && !input.dataset.validated) {
+                input.dataset.validated = "true";
+                attachValidation(input, validationRules[name]);
+            }
+        });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // 🚀 Initialize immediately if form is already on the page
+    document.querySelectorAll('form input').forEach(input => {
+        const name = input.name.toLowerCase();
+        if (validationRules[name] && !input.dataset.validated) {
+            input.dataset.validated = "true";
+            attachValidation(input, validationRules[name]);
+        }
+    });
+});
+
 </script>
+
+
+
+{% endblock %}
+
 {% endblock %}

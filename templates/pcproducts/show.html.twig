@@ -1,50 +1,65 @@
-{% extends 'base.html.twig' %}
+{% extends 'adminlayout.html.twig' %}
 
 {% block title %}PC Product Details{% endblock %}
 
-{% block body %}
-<div class="container my-5">
-    <h1 class="mb-4 text-center">PC Product Details</h1>
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center fw-bold mb-4" style="color:#2e2e2e;">PC Product Details</h1>
 
-    <div class="card shadow-lg border-0 rounded-3">
+    <div class="card shadow-sm border-0 rounded-3 mx-auto" style="max-width:1100px;">
         <div class="row g-0">
-            <div class="col-md-4 text-center p-3">
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4 bg-light rounded-start">
                 {% if pcproduct.image %}
-                    <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}" 
-                         alt="{{ pcproduct.name }}" 
-                         class="img-fluid rounded" 
-                         style="max-height: 250px; object-fit: cover;">
+                    <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}"
+                         alt="{{ pcproduct.name }}"
+                         class="img-fluid rounded"
+                         style="max-height:260px; width:auto; object-fit:contain;">
                 {% else %}
-                    <span class="text-muted">No Image Available</span>
+                    <div class="text-center">
+                        <span class="text-muted fst-italic">No Image Available</span>
+                    </div>
                 {% endif %}
             </div>
-            <div class="col-md-8">
-                <div class="card-body">
-                    <h2 class="card-title fw-bold">{{ pcproduct.name }}</h2>
 
-                    <p>
-                        <strong>Category:</strong> 
-                        <span class="badge bg-info text-dark">{{ pcproduct.category }}</span>
+            <div class="col-md-8">
+                <div class="card-body px-4 py-4">
+                    <h2 class="fw-bold mb-2" style="color:#2e2e2e;">{{ pcproduct.name }}</h2>
+
+                    <p class="mb-2">
+                        <strong>Category:</strong>
+                        <span class="product-category ms-2">{{ pcproduct.category }}</span>
                     </p>
-                    <p><strong>Brand:</strong> {{ pcproduct.brand }}</p>
-                    <p><strong>Price:</strong> P{{ pcproduct.price|number_format(2, '.', ',') }}</p>
-                    <p><strong>Description:</strong><br> {{ pcproduct.description }}</p>
-                    <p>
-                        <strong>Created At:</strong> {{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d H:i:s') : '' }}<br>
-                        <strong>Updated At:</strong> {{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d H:i:s') : '' }}
-                    </p>
-                    <p>
+
+                    <p class="mb-2"><strong>Brand:</strong> <span class="ms-2">{{ pcproduct.brand }}</span></p>
+                    <p class="mb-2"><strong>Price:</strong> <span class="ms-2">₱{{ pcproduct.price|number_format(2, '.', ',') }}</span></p>
+
+                    <p class="mb-3"><strong>Description:</strong><br><span class="ms-2">{{ pcproduct.description }}</span></p>
+
+                    <div class="mb-3 small text-muted">
+                        <p class="mb-1"><strong>Created At:</strong> <span class="ms-2">{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d H:i:s') : '' }}</span></p>
+                        <p class="mb-1"><strong>Updated At:</strong> <span class="ms-2">{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d H:i:s') : '' }}</span></p>
+                    </div>
+
+                    <p class="mb-3">
                         <strong>Available:</strong>
+                        <span class="ms-2">
                         {% if pcproduct.isavailable %}
                             <span class="badge bg-success">Yes</span>
                         {% else %}
                             <span class="badge bg-danger">No</span>
                         {% endif %}
+                        </span>
                     </p>
 
-                    <div class="mt-4">
-                        <a href="{{ path('app_pcproducts_index') }}" class="btn btn-secondary me-2">← Back to List</a>
-                        <a href="{{ path('app_pcproducts_edit', {'id': pcproduct.id}) }}" class="btn btn-warning me-2">✎ Edit</a>
+                    <!-- Buttons group: inline, equal height -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                        <a href="{{ path('app_pcproducts_index') }}"
+                           class="btn btn-sm btn-dark-theme">← Back to List</a>
+
+                        <a href="{{ path('app_pcproducts_edit', {'id': pcproduct.id}) }}"
+                           class="btn btn-sm btn-orange">✎ Edit</a>
+
+                        {# included delete form (we override the partial below) #}
                         {{ include('pcproducts/_delete_form.html.twig', { pcproduct: pcproduct }) }}
                     </div>
                 </div>
@@ -52,4 +67,56 @@
         </div>
     </div>
 </div>
+
+{# Inline styles to keep everything contained in this template so it matches the list theme #}
+<style>
+/* category badge (orange) */
+.product-category {
+    display:inline-block;
+    background-color:#F88F6A;
+    color:#ffffff;
+    padding:0.32rem 0.6rem;
+    border-radius:0.45rem;
+    font-weight:600;
+    font-size:0.9rem;
+    vertical-align:middle;
+}
+
+/* button styles consistent with list theme */
+.btn-dark-theme {
+    background-color: #2e2e2e;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 0.40rem 0.75rem;
+    border: none;
+}
+.btn-dark-theme:hover { background-color: #1f1f1f; color:#fff; }
+
+.btn-orange {
+    background-color: #F88F6A;
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 0.40rem 0.75rem;
+    border: none;
+}
+.btn-orange:hover { background-color: #e37453; color:#fff; }
+
+.btn-delete-custom {
+    background-color: #dc3545;
+    color: #ffffff;
+    border-radius:6px;
+    padding: 0.40rem 0.75rem;
+    border: none;
+}
+.btn-delete-custom:hover { background-color: #b72932; color:#fff; }
+
+/* ensure inline form button aligns perfectly with anchors */
+.inline-delete-form { display:inline-flex; margin:0; padding:0; align-items:center; }
+
+/* responsive tweaks */
+@media (max-width: 576px) {
+    .product-category { font-size: 0.85rem; padding: .28rem .5rem; }
+    .card-body { padding: 1rem; }
+}
+</style>
 {% endblock %}

@@ -22,7 +22,7 @@ class PcproductsType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '5M',
+                        'maxSize' => '50M',
                         'mimeTypes' => [
                             'image/jpeg',
                             'image/png',

@@ -22,21 +22,21 @@ final class UserController extends AbstractController
         ]);
     }
 
+    // Customer signup (frontend)
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = new User();
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(UserType::class, $user, ['is_admin' => false]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Always set ROLE_CUSTOMER for new signups
-            $user->setRoles(['ROLE_CUSTOMER']);
+            $user->setRoles('ROLE_CUSTOMER'); // always CUSTOMER
 
             // Store password as plain text (not recommended for production)
             $user->setPassword($user->getPassword());
 
-            // Reset AUTO_INCREMENT to 1 if table is empty
+            // Reset AUTO_INCREMENT if table empty
             $count = $entityManager->getRepository(User::class)->count([]);
             if ($count === 0) {
                 $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
@@ -55,6 +55,47 @@ final class UserController extends AbstractController
         ]);
     }
 
+        // Admin add user page
+    #[Route('/addaccountadmin', name: 'app_user_add_admin', methods: ['GET', 'POST'])]
+    public function addAdmin(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $user = new User();
+        $form = $this->createForm(UserType::class, $user, ['is_admin' => true, 'is_edit' => false]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Ensure roles is a string, default to ROLE_CUSTOMER if empty
+            $roles = $form->get('roles')->getData() ?: 'ROLE_CUSTOMER';
+            $user->setRoles($roles);
+
+            // Set password from form data
+            $password = $form->get('password')->getData();
+            if (!$password) {
+                $this->addFlash('error', 'Password cannot be blank.');
+                return $this->redirectToRoute('app_user_add_admin');
+            }
+            $user->setPassword($password);
+
+            // Reset AUTO_INCREMENT if table empty
+            $count = $entityManager->getRepository(User::class)->count([]);
+            if ($count === 0) {
+                $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
+            }
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'User added successfully.');
+            return $this->redirectToRoute('app_user_index');
+        }
+
+        return $this->render('user/addaccountadmin.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
+    }
+
+
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
     public function show(User $user): Response
     {
@@ -63,23 +104,46 @@ final class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, User $user, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(UserType::class, $user);
-        $form->handleRequest($request);
+#[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
+public function edit(Request $request, User $user, EntityManagerInterface $entityManager): Response
+{
+    // Tell the form it's an edit, so password is optional
+    $form = $this->createForm(UserType::class, $user, [
+        'is_admin' => true,
+        'is_edit' => true, // <-- important for password optional
+    ]);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Update password only if the user typed a new one
+        $password = $form->get('password')->getData();
+        if ($password) {
+            $user->setPassword($password);
         }
 
-        return $this->render('user/edit.html.twig', [
-            'user' => $user,
-            'form' => $form,
-        ]);
+        // Handle roles if present
+        if ($form->has('roles')) {
+            $roles = $form->get('roles')->getData(); // returns 'ROLE_ADMIN' or 'ROLE_CUSTOMER'
+            if ($roles) {
+                $user->setRoles($roles);
+            }
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'User updated successfully.');
+
+        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    return $this->render('user/edit.html.twig', [
+        'user' => $user,
+        'form' => $form,
+    ]);
+}
+
+
+
 
     #[Route('/{id}', name: 'app_user_delete', methods: ['POST'])]
     public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
@@ -88,7 +152,7 @@ final class UserController extends AbstractController
             $entityManager->remove($user);
             $entityManager->flush();
 
-            // Reset AUTO_INCREMENT if table is empty
+            // Reset AUTO_INCREMENT if table empty
             $count = $entityManager->getRepository(User::class)->count([]);
             if ($count === 0) {
                 $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');

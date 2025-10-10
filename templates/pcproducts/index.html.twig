@@ -1,81 +1,448 @@
-{% extends 'base.html.twig' %}
+{% extends 'adminlayout.html.twig' %}
 
 {% block title %}PC Products Index{% endblock %}
 
-{% block body %}
-<div class="container-fluid mt-5">
-    <h1 class="mb-4 text-center">PC Products</h1>
+{% block content %}
+<div class="container-fluid py-5">
 
-    <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-body">
-            <table class="table table-hover align-middle text-center">
-                <thead class="table-dark">
-                    <tr>
-                        <th scope="col">Id</th>
-                        <th scope="col">Photo</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Brand</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Description</th>
-                        <th scope="col">Created At</th>
-                        <th scope="col">Updated At</th>
-                        <th scope="col">Available</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for pcproduct in pcproducts %}
-                    <tr>
-                        <td>{{ pcproduct.id }}</td>
-                        <td>
-                            {% if pcproduct.image %}
-                                <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}" 
-                                     alt="{{ pcproduct.name }}" 
-                                     class="rounded" 
-                                     style="height: 50px; width: 50px; object-fit: cover;">
-                            {% else %}
-                                <span class="text-muted">No Image</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ pcproduct.name }}</td>
-                        <td>
-                            <span class="badge bg-info text-dark">{{ pcproduct.category }}</span>
-                        </td>
-                        <td>{{ pcproduct.brand }}</td>
-                        <td>${{ pcproduct.price|number_format(2, '.', ',') }}</td>
-                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            {{ pcproduct.description }}
-                        </td>
-                        <td>{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d') : '' }}</td>
-                        <td>{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d') : '' }}</td>
-                        <td>
-                            {% if pcproduct.isavailable %}
-                                <span class="badge bg-success">Yes</span>
-                            {% else %}
-                                <span class="badge bg-danger">No</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ path('app_pcproducts_show', {'id': pcproduct.id}) }}" 
-                               class="btn btn-sm btn-outline-info me-1">Show</a>
-                            <a href="{{ path('app_pcproducts_edit', {'id': pcproduct.id}) }}" 
-                               class="btn btn-sm btn-outline-warning me-1">Edit</a>
-                            {{ include('pcproducts/_delete_form.html.twig', { pcproduct: pcproduct }) }}
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="11" class="text-muted text-center py-4">No records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <!-- Header + Add Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">🖥️ PC Product List</h3>
+
+        <div>
+            <button
+                type="button"
+                class="btn btn-sm px-4 py-2 shadow-sm fw-semibold"
+                style="background-color:#F88F6A; color:white; border-radius:8px;"
+                data-bs-toggle="modal"
+                data-bs-target="#addProductModal">
+                <i class="bi bi-plus-circle me-1"></i> Add New Product
+            </button>
         </div>
     </div>
 
-    <div class="mt-4 text-center">
-        <a href="{{ path('app_pcproducts_new') }}" class="btn btn-success btn-lg shadow">➕ Add New Product</a>
+    <!-- Product Table -->
+    <div class="card border-0 shadow-sm rounded-4 mx-1">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="pcproductsTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1200px;">
+                    <thead style="background-color:#F88F6A; color:white;">
+                        <tr class="text-center">
+                            <th class="fw-bold">ID</th>
+                            <th class="fw-bold">Photo</th>
+                            <th class="fw-bold">Name</th>
+                            <th class="fw-bold">Category</th>
+                            <th class="fw-bold">Brand</th>
+                            <th class="fw-bold">Price</th>
+                            <th class="fw-bold">Description</th>
+                            <th class="fw-bold">Created At</th>
+                            <th class="fw-bold">Updated At</th>
+                            <th class="fw-bold">Available</th>
+                            <th class="fw-bold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pcproduct in pcproducts %}
+                        <tr>
+                            <td class="text-center">{{ pcproduct.id }}</td>
+
+                            <!-- Photo -->
+                            <td class="text-center">
+                                {% if pcproduct.image %}
+                                    <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}"
+                                        alt="{{ pcproduct.name }}"
+                                        class="rounded border product-thumb"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#showModal{{ pcproduct.id }}"
+                                        style="height: 45px; width: 45px; object-fit: contain; padding: 3px; background-color:#f8f8f8; cursor:pointer;">
+                                {% else %}
+                                    <span class="text-muted small">No Image</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center fw-semibold">{{ pcproduct.name }}</td>
+
+                            <td class="text-center">
+                                <span class="badge rounded-pill text-white" style="background-color:#F88F6A;">{{ pcproduct.category }}</span>
+                            </td>
+
+                            <td class="text-center">{{ pcproduct.brand }}</td>
+
+                            <td class="text-center">${{ pcproduct.price|number_format(2, '.', ',') }}</td>
+
+                            <!-- Description -->
+                            <td style="max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                {{ pcproduct.description }}
+                            </td>
+
+                            <td class="text-center">{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d') : '' }}</td>
+                            <td class="text-center">{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d') : '' }}</td>
+
+                            <td class="text-center">
+                                {% if pcproduct.isavailable %}
+                                    <span class="badge bg-success rounded-pill px-3 py-2">Yes</span>
+                                {% else %}
+                                    <span class="badge bg-danger rounded-pill px-3 py-2">No</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <button type="button" 
+                                            class="btn btn-sm fw-semibold"
+                                            style="background-color:#F88F6A; color:white; border-radius:6px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#showModal{{ pcproduct.id }}">
+                                        Show
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm fw-semibold"
+                                            style="background-color:#2e2e2e; color:white; border-radius:6px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editModal{{ pcproduct.id }}">
+                                        Edit
+                                    </button>
+
+                                    {{ include('pcproducts/_delete_form.html.twig', { pcproduct: pcproduct }) }}
+                                </div>
+                            </td>
+                        </tr>
+<!-- SHOW MODAL -->
+<div class="modal fade" id="showModal{{ pcproduct.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+      
+      <!-- Header -->
+      <div class="modal-header" style="background-color:#F88F6A; color:white;">
+        <h5 class="modal-title fw-semibold">{{ pcproduct.name }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4">
+        <div class="row align-items-start">
+          
+          <!-- Product Image -->
+          <div class="col-md-5 text-center mb-3 mb-md-0">
+            {% if pcproduct.image %}
+              <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}"
+                   alt="{{ pcproduct.name }}"
+                   class="img-fluid rounded shadow-sm"
+                   style="max-height: 280px; object-fit: contain; background-color:#f9f9f9; padding:10px;">
+            {% else %}
+              <div class="border rounded py-5 text-muted bg-light">No Image</div>
+            {% endif %}
+          </div>
+
+          <!-- Product Info -->
+          <div class="col-md-7">
+            <div class="p-2">
+              <h5 class="fw-bold mb-3" style="color:#2e2e2e;">Product Details</h5>
+              <ul class="list-unstyled small mb-3">
+                <li class="mb-2"><strong class="text-secondary">Brand:</strong> <span class="fw-semibold">{{ pcproduct.brand }}</span></li>
+                <li class="mb-2"><strong class="text-secondary">Category:</strong> <span class="fw-semibold">{{ pcproduct.category }}</span></li>
+                <li class="mb-2"><strong class="text-secondary">Price:</strong> 
+                  <span class="fw-semibold text-success">${{ pcproduct.price|number_format(2, '.', ',') }}</span>
+                </li>
+                <li class="mb-2"><strong class="text-secondary">Available:</strong>
+                  {% if pcproduct.isavailable %}
+                    <span class="badge bg-success rounded-pill px-3 py-2">Yes</span>
+                  {% else %}
+                    <span class="badge bg-danger rounded-pill px-3 py-2">No</span>
+                  {% endif %}
+                </li>
+              </ul>
+              <hr>
+              <div>
+                <h6 class="fw-semibold text-secondary mb-2">Description</h6>
+                <p class="text-muted small mb-0" style="line-height:1.6;">
+                  {{ pcproduct.description ?? 'No description provided.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+                        <!-- EDIT MODAL -->
+                        <div class="modal fade" id="editModal{{ pcproduct.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4 shadow-lg">
+                                    <div class="modal-header" style="background-color:#2e2e2e; color:white;">
+                                        <h5 class="modal-title">Edit {{ pcproduct.name }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4" id="editModalBody{{ pcproduct.id }}">
+                                        <div class="text-center text-muted py-3">
+                                            <div class="spinner-border text-dark" role="status"></div>
+                                            <p class="mt-2 mb-0 small">Loading form...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="11" class="text-center text-muted py-4">No records found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+    <div class="modal-header" style="background-color:#F88F6A; color:white;">
+        <h5 class="modal-title fw-semibold">Add New Product</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body p-4" id="addProductModalBody">
+        <div class="text-center text-muted py-3">
+        <div class="spinner-border text-dark" role="status"></div>
+        <p class="mt-2 mb-0 small">Loading form...</p>
+        </div>
+    </div>
+    </div>
+</div>
+</div>
+
+<style>
+.card { background-color: #fff; overflow: hidden; }
+.table-hover tbody tr:hover { background-color: #f8f9fa; }
+.badge { font-weight: 500; }
+.product-thumb { border-radius: 6px; padding: 3px; }
+.form-check-input:checked {
+background-color: #F88F6A !important;
+border-color: #F88F6A !important;
+}
+
+/* ✅ Add Modal Image Preview Only */
+.preview-img {
+display: block;
+width: 220px;
+height: 220px;
+object-fit: contain;
+margin: 0 auto 10px auto;
+border-radius: 8px;
+border: 2px dashed #ddd;
+background-color: #f9f9f9;
+padding: 5px;
+}
+.preview-img.empty {
+background: #f9f9f9 url("{{ asset('images/placeholder-image.png') }}") center/60px no-repeat;
+}
+.file-error {
+    color: red;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 5px;
+}
+</style>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    $.fn.dataTable.ext.errMode = 'none';
+
+    const $table = $('#pcproductsTable');
+    const rowCount = $table.find('tbody tr').length;
+    const hasData = rowCount > 0 && !$table.find('tbody tr td').first().text().includes('No records');
+
+    if (hasData && !$.fn.DataTable.isDataTable('#pcproductsTable')) {
+        $table.DataTable({
+            responsive: true,
+            paging: true,
+            pageLength: 10,
+            lengthChange: false,
+            searching: true,
+            order: [[0, 'asc']],
+            columnDefs: [{ targets: '_all', className: 'text-center' }],
+            language: {
+                searchPlaceholder: "Search...",
+                search: "_INPUT_",
+                zeroRecords: "No matching products found",
+                infoEmpty: "No products available",
+                info: "Showing _START_ to _END_ of _TOTAL_ products",
+                paginate: { previous: "Prev", next: "Next" }
+            },
+            autoWidth: false,
+            scrollX: true,
+        });
+    }
+
+    // ✅ Image preview + inline validation
+    function setupImagePreview(form) {
+        const fileInput = form.querySelector('input[type="file"]');
+        if (!fileInput) return;
+
+        let preview = form.querySelector('.preview-img');
+        if (!preview) {
+            preview = document.createElement('img');
+            preview.classList.add('preview-img', 'empty');
+            fileInput.parentNode.insertBefore(preview, fileInput);
+        }
+
+        let error = document.createElement('div');
+        error.classList.add('file-error');
+        fileInput.parentNode.insertBefore(error, fileInput.nextSibling);
+
+        fileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = evt => {
+                    preview.src = evt.target.result;
+                    preview.classList.remove('empty');
+                };
+                reader.readAsDataURL(file);
+                error.textContent = '';
+            } else {
+                preview.src = '';
+                preview.classList.add('empty');
+                error.textContent = '❌ Please select a valid image file (JPG, PNG, GIF, or WEBP).';
+                fileInput.value = '';
+            }
+        });
+    }
+// ---------- EDIT MODAL ----------
+document.querySelectorAll('[id^="editModal"]').forEach(modal => {
+    modal.addEventListener('show.bs.modal', function (event) {
+        const id = this.id.replace('editModal', '');
+        const modalBody = document.getElementById('editModalBody' + id);
+        modalBody.innerHTML = `
+            <div class="text-center text-muted py-3">
+                <div class="spinner-border text-dark"></div>
+                <p class="mt-2 mb-0 small">Loading form...</p>
+            </div>`;
+
+        // ✅ Find current image in the table row you clicked
+        const button = event.relatedTarget;
+        const row = button.closest('tr');
+        const currentImage = row?.querySelector('img')?.getAttribute('src');
+
+        fetch(`/pcproducts/${id}/edit`)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const form = doc.querySelector('form');
+
+                if (form) {
+                    // ✅ Make sure form action is correct
+                    form.action = `/pcproducts/${id}/edit`;
+
+                    // ✅ Restrict file input to images
+                    const fileInput = form.querySelector('input[type="file"]');
+                    if (fileInput) fileInput.setAttribute('accept', 'image/*');
+
+                    // ✅ Create a single image preview (existing + new)
+                    const imageContainer = document.createElement('div');
+                    imageContainer.classList.add('text-center', 'mb-3');
+
+                    const previewImg = document.createElement('img');
+                    previewImg.classList.add('img-fluid', 'rounded', 'shadow-sm');
+                    previewImg.style.maxHeight = '240px';
+                    previewImg.style.objectFit = 'contain';
+                    previewImg.style.backgroundColor = '#f9f9f9';
+                    previewImg.style.padding = '8px';
+                    previewImg.style.border = '2px dashed #ddd';
+
+                    // ✅ Load the existing product image (from the row)
+                    if (currentImage) {
+                        previewImg.src = currentImage;
+                    } else {
+                        previewImg.src = "{{ asset('images/placeholder-image.png') }}";
+                        previewImg.classList.add('empty');
+                    }
+
+                    imageContainer.appendChild(previewImg);
+                    form.insertBefore(imageContainer, form.firstChild);
+
+                    // ✅ Inline error message
+                    const errorMsg = document.createElement('div');
+                    errorMsg.classList.add('file-error', 'text-danger', 'mt-1', 'small');
+                    fileInput?.parentNode.insertBefore(errorMsg, fileInput.nextSibling);
+
+                    // ✅ When file changes, update preview
+                    fileInput?.addEventListener('change', e => {
+                        const file = e.target.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = evt => {
+                                previewImg.src = evt.target.result;
+                                previewImg.classList.remove('empty');
+                            };
+                            reader.readAsDataURL(file);
+                            errorMsg.textContent = '';
+                        } else {
+                            errorMsg.textContent = '❌ Please select a valid image file (JPG, PNG, GIF, or WEBP).';
+                            fileInput.value = '';
+                        }
+                    });
+
+                    // ✅ Style submit button
+                    const submit = form.querySelector('button[type="submit"]');
+                    if (submit) submit.classList.add('btn-warning', 'fw-semibold');
+
+                    // ✅ Inject form
+                    modalBody.innerHTML = '';
+                    modalBody.appendChild(form);
+                } else {
+                    modalBody.innerHTML = '<p class="text-danger">Could not load edit form.</p>';
+                }
+            })
+            .catch(() => {
+                modalBody.innerHTML = '<p class="text-danger">Failed to load form.</p>';
+            });
+    });
+});
+
+
+
+
+    // ---------- ADD PRODUCT MODAL ----------
+    const addProductModal = document.getElementById('addProductModal');
+    if (addProductModal) {
+        addProductModal.addEventListener('show.bs.modal', function () {
+            const modalBody = document.getElementById('addProductModalBody');
+            modalBody.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <div class="spinner-border text-dark"></div>
+                    <p class="mt-2 mb-0 small">Loading form...</p>
+                </div>`;
+            fetch("{{ path('app_pcproducts_new') }}")
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const form = doc.querySelector('form');
+                    if (form) {
+                        form.action = "{{ path('app_pcproducts_new') }}";
+                        const submit = form.querySelector('button[type=\"submit\"]');
+                        if (submit) submit.classList.add('btn-warning', 'fw-semibold');
+                        modalBody.innerHTML = '';
+                        modalBody.appendChild(form);
+                        setupImagePreview(form);
+                    } else {
+                        modalBody.innerHTML = '<p class=\"text-danger\">Could not load add form.</p>';
+                    }
+                })
+                .catch(() => modalBody.innerHTML = '<p class="text-danger">Failed to load form.</p>');
+        });
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}

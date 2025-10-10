@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+    :root {
+      --dark-bg: #2E2E2E;
+      --accent: #F88F6A;
+      --light-bg: #f8f9fa;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      background-color: var(--light-bg);
+    }
+
+    /* ===== HEADER ===== */
+    .navbar {
+      background-color: var(--dark-bg) !important;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .navbar-brand img {
+      width: 50px;
+      height: 32px;
+      filter: grayscale(1) brightness(0) invert(1);
+    }
+
+    .nav-link {
+      color: white !important;
+      font-weight: 500;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--accent) !important;
+      transform: scale(1.05);
+    }
+
+    .nav-link.fw-bold {
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+
+    .btn-outline-light {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+      border-width: 1.5px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-outline-light:hover {
+      background-color: white;
+      color: var(--dark-bg);
+    }
+
+    .btn-orange {
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-weight: 500;
+    }
+
+    .btn-orange:hover {
+      opacity: 0.9;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background-color: var(--dark-bg);
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+      margin-top: 3rem;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    footer .social-links a {
+      color: var(--accent);
+      margin: 0 10px;
+      font-size: 1.3rem;
+      transition: opacity 0.2s;
+    }
+
+    footer .social-links a:hover {
+      opacity: 0.8;
+    }
+
+    footer p {
+      margin-top: 1rem;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+  </style>
+
+  {% block stylesheets %}{% endblock %}
+</head>
+
+<body>
+  <!-- ===== HEADER (New Navbar Design) ===== -->
+  <header class="navbar p-3" style="background: #2e2e2e;">
+    <div class="container-fluid flex-wrap justify-content-between align-items-center">
+
+      <!-- Logo -->
+      <a class="navbar-brand d-flex align-items-center mb-2 mb-lg-0" href="{{ path('app_projects') }}">
+        <img src="{{ asset('Icon.png') }}" alt="Logo">
+      </a>
+
+      <!-- Nav links -->
+      <ul class="nav justify-content-center flex-wrap mx-auto">
+        <li class="nav-item">
+          <a class="nav-link fs-6 {% if app.request.get('_route') == 'app_projects' %}fw-bold{% endif %}" href="{{ path('app_projects') }}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fs-6 {% if 'products' in app.request.get('_route') %}fw-bold{% endif %}" href="{{ path('app_products') }}">Products</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fs-6 {% if 'services' in app.request.get('_route') %}fw-bold{% endif %}" href="{{ path('app_servicebooking_new') }}">Service Booking</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fs-6" href="#">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fs-6 {% if 'contact' in app.request.get('_route') %}fw-bold{% endif %}" href="{{ path('app_contact') }}">Contact</a>
+        </li>
+      </ul>
+
+      <!-- Right Buttons -->
+      <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0">
+        <a href="{{ path('app_login') }}" class="btn btn-outline-light btn-sm">Login</a>
+        <a href="{{ path('app_user_new') }}" class="btn btn-sm btn-orange">Sign-up</a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main style="min-height: 75vh; padding: 2rem;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="social-links">
+      <a href="#"><i class="bi bi-facebook"></i></a>
+      <a href="#"><i class="bi bi-instagram"></i></a>
+      <a href="#"><i class="bi bi-twitter-x"></i></a>
+    </div>
+    <p>© {{ "now"|date("Y") }} NexusCore. All Rights Reserved.</p>
+  </footer>
+
+  <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+  {% block javascripts %}{% endblock %}
+</body>
+</html>
+
+{% endblock %}

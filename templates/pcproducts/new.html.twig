@@ -1,93 +1,173 @@
-{% extends 'base.html.twig' %}
+{% extends 'adminlayout.html.twig' %}
 
 {% block title %}Add New PC Product{% endblock %}
 
-{% block body %}
-
+{% block content %}
 {% form_theme form 'form/form_theme.html.twig' %}
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow rounded-3 border-0">
-        <div class="card-body p-4">
-          <h2 class="fw-bold text-center mb-4">Add New PC Product</h2>
+<div class="container-fluid py-4" style="max-width: 900px; margin: 0 auto;">
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-4">
+      <h3 class="fw-bold text-center mb-4" style="color:#2e2e2e;">Add New PC Product</h3>
 
-          {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
-
-          <!-- IMAGE FIELD FIRST -->
-          <div class="mb-3">
-            {{ form_label(form.image, 'Product Image', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.image, { 'attr': {'class': 'form-control'} }) }}
-            {{ form_errors(form.image) }}
-          </div>
-
-          <div class="mb-3">
-            {{ form_label(form.name, 'Product Name', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.name, { 'attr': {'class': 'form-control', 'placeholder': 'Enter product name'} }) }}
-            {{ form_errors(form.name) }}
-          </div>
-
-          <!-- CATEGORY DROPDOWN -->
-          <div class="mb-3">
-            {{ form_label(form.category, 'Category', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.category, { 'attr': {'class': 'form-select'} }) }}
-            {{ form_errors(form.category) }}
-          </div>
-
-          <!-- BRAND DROPDOWN -->
-          <div class="mb-3">
-            {{ form_label(form.brand, 'Brand', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.brand, { 'attr': {'class': 'form-select'} }) }}
-            {{ form_errors(form.brand) }}
-          </div>
-
-          <div class="mb-3">
-            {{ form_label(form.price, 'Price', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.price, { 'attr': {'class': 'form-control', 'placeholder': 'Enter price'} }) }}
-            {{ form_errors(form.price) }}
-          </div>
-
-          <div class="mb-3">
-            {{ form_label(form.description, 'Description', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.description, { 'attr': {'class': 'form-control', 'placeholder': 'Enter product description'} }) }}
-            {{ form_errors(form.description) }}
-          </div>
-
-          <div class="mb-3">
-            {{ form_label(form.isavailable, 'Available', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            <div class="form-check">
-                {{ form_widget(form.isavailable, { 'attr': {'class': 'form-check-input'} }) }}
-            </div>
-            {{ form_errors(form.isavailable) }}
-          </div>
-
-          <div class="mb-3">
-            {{ form_label(form.createdat, 'Created At', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.createdat, { 'attr': {'class': 'form-control'} }) }}
-            {{ form_errors(form.createdat) }}
-          </div>
-
-          <div class="mb-3">
-            {{ form_label(form.updatedat, 'Updated At', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-            {{ form_widget(form.updatedat, { 'attr': {'class': 'form-control'} }) }}
-            {{ form_errors(form.updatedat) }}
-          </div>
-
-          <button type="submit" class="btn btn-orange w-100 mt-3">Add Product</button>
-
-          {{ form_end(form) }}
-
-          <p class="text-center mt-3">
-            <a href="{{ path('app_pcproducts_index') }}" class="text-orange fw-bold">
-                Back to Products
-            </a>
-          </p>
-
+      <!-- IMAGE PREVIEW CARD -->
+      <div class="d-flex justify-content-center mb-4">
+        <div class="image-preview-card shadow-sm border rounded-3">
+          <img id="imagePreview"
+               src="{{ asset('images/placeholder.png') }}"
+               alt="Image Preview"
+               class="rounded-3" />
         </div>
+      </div>
+
+      {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+      <!-- IMAGE INPUT -->
+      <div class="mb-3">
+        {{ form_label(form.image, 'Product Image', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.image, { 'attr': {'class': 'form-control', 'accept': 'image/*'} }) }}
+        {{ form_errors(form.image) }}
+      </div>
+
+      <!-- NAME -->
+      <div class="mb-3">
+        {{ form_label(form.name, 'Product Name', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.name, { 'attr': {'class': 'form-control', 'placeholder': 'Enter product name'} }) }}
+        {{ form_errors(form.name) }}
+      </div>
+
+      <!-- CATEGORY -->
+      <div class="mb-3">
+        {{ form_label(form.category, 'Category', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.category, { 'attr': {'class': 'form-select'} }) }}
+        {{ form_errors(form.category) }}
+      </div>
+
+      <!-- BRAND -->
+      <div class="mb-3">
+        {{ form_label(form.brand, 'Brand', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.brand, { 'attr': {'class': 'form-select'} }) }}
+        {{ form_errors(form.brand) }}
+      </div>
+
+      <!-- PRICE -->
+      <div class="mb-3">
+        {{ form_label(form.price, 'Price', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.price, { 'attr': {'class': 'form-control', 'placeholder': 'Enter price'} }) }}
+        {{ form_errors(form.price) }}
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="mb-3">
+        {{ form_label(form.description, 'Description', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+        {{ form_widget(form.description, { 'attr': {'class': 'form-control', 'placeholder': 'Enter product description'} }) }}
+        {{ form_errors(form.description) }}
+      </div>
+
+      <!-- IS AVAILABLE -->
+      <div class="form-check form-switch mb-4">
+        {{ form_widget(form.isavailable, {
+          'attr': {
+            'class': 'form-check-input',
+            'role': 'switch',
+            'style': 'cursor:pointer; width:50px; height:25px;'
+          }
+        }) }}
+        {{ form_label(form.isavailable, 'Available', { 'label_attr': {'class': 'form-check-label fw-bold ms-2'} }) }}
+        {{ form_errors(form.isavailable) }}
+      </div>
+
+      <!-- CREATED & UPDATED -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          {{ form_label(form.createdat, 'Created At', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+          {{ form_widget(form.createdat, { 'attr': {'class': 'form-control'} }) }}
+          {{ form_errors(form.createdat) }}
+        </div>
+        <div class="col-md-6 mb-3">
+          {{ form_label(form.updatedat, 'Updated At', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
+          {{ form_widget(form.updatedat, { 'attr': {'class': 'form-control'} }) }}
+          {{ form_errors(form.updatedat) }}
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="text-center mt-3">
+        <button type="submit" class="btn fw-semibold px-4 py-2"
+                style="background-color:#F88F6A; color:white; border:none; border-radius:6px; font-size:0.95rem;">
+          ➕ Add Product
+        </button>
+      </div>
+
+      {{ form_end(form) }}
+
+      <!-- BACK LINK -->
+      <div class="text-center mt-3">
+        <a href="{{ path('app_pcproducts_index') }}" class="fw-bold"
+           style="color:#2e2e2e; text-decoration:none;">
+          ← Back to Products
+        </a>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+.image-preview-card {
+  width: 350px;
+  height: 200px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.image-preview-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #f5f5f5;
+}
+
+.form-check-input:checked {
+  background-color: #F88F6A !important;
+  border-color: #F88F6A !important;
+}
+
+.btn:hover {
+  background-color: #e37453 !important;
+}
+
+.form-label {
+  color: #2e2e2e;
+}
+
+main, .main-content, .container-fluid {
+  overflow: visible !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.querySelector('input[type="file"][name$="[image]"]');
+  const preview = document.getElementById('imagePreview');
+
+  if (input && preview) {
+    input.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = "{{ asset('images/placeholder.png') }}";
+      }
+    });
+  }
+});
+</script>
 
 {% endblock %}
