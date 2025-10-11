@@ -1,68 +1,20 @@
-{% extends 'base.html.twig' %}
+{% extends 'headerfooter.html.twig' %}
 
 {% block title %}Nexuscore | New Service Booking{% endblock %}
 
-{% block body %}
-
+{% block content %}
 <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
 <link rel="stylesheet" href="{{ asset('build/app.css') }}">
 
 <style>
-  body {
-    font-family: 'Montserrat', 'Open Sans', sans-serif !important;
-    overflow-x: hidden;
-    background: #fff;
-  }
-  .btn-orange {
-    background: #F88F6A;
-    color: #fff;
-    transition: 0.3s;
-  }
-  .btn-orange:hover {
-    background: #e47654;
-    color: #fff;
-  }
-  .card:hover {
-    transform: translateY(-6px);
-    transition: 0.3s ease;
-  }
-  .form-label {
-    font-weight: 600;
-  }
+  body { font-family: 'Montserrat', 'Open Sans', sans-serif !important; overflow-x: hidden; background: #fff; }
+  .btn-orange { background: #F88F6A; color: #fff; transition: 0.3s; }
+  .btn-orange:hover { background: #e47654; color: #fff; }
+  .card:hover { transform: translateY(-6px); transition: 0.3s ease; }
+  .form-label { font-weight: 600; }
 </style>
 
-<!-- Header -->
-<header class="navbar p-3" style="background: #2e2e2e;">
-  <div class="container-fluid flex-wrap justify-content-between align-items-center">
-    <a class="navbar-brand d-flex align-items-center mb-2 mb-lg-0">
-      <img src="{{ asset('ICon.png') }}" alt="Logo" style="width: 50px; height: 32px; filter: grayscale(1) brightness(0) invert(1);">
-    </a>
-
-    <ul class="nav justify-content-center flex-wrap mx-auto">
-      <li class="nav-item">
-        <a class="nav-link text-white fs-6" href="{{ path('app_projects') }}">Home</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fs-6" href="{{ path('app_products') }}">Products</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fs-6" href="{{ path('app_servicebooking_index') }}">Service Booking</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fs-6" href="#">About</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white fs-6" href="{{ path('app_contact') }}">Contact</a>
-      </li>
-    </ul>
-
-    <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-2 mt-3 mt-lg-0">
-      <a href="{{ path('app_login') }}" class="btn btn-outline-light btn-sm">Login</a>
-      <a href="{{ path('app_user_new') }}" class="btn btn-sm text-white btn-orange">Sign-up</a>
-    </div>
-  </div>
-</header>
 
 <!-- Page Header -->
 <section class="text-center py-5" style="background: #f5f5f5;">
@@ -77,7 +29,7 @@
   <div class="container">
     <div class="card shadow-lg border-0 rounded-3 mx-auto" style="max-width: 800px;">
       <div class="card-body">
-        {{ form_start(form) }}
+        {{ form_start(form, {'attr': {'id': 'serviceBookingForm'}}) }}
 
         <div class="mb-3">
           {{ form_label(form.customerName) }}
@@ -120,23 +72,14 @@
   </div>
 </section>
 
-<!-- Footer -->
-<footer class="bg-dark text-white py-4" style="background: #2e2e2e;">
-  <div class="container text-center">
-    <div class="row">
-      <div class="col-md-6 mb-3 mb-md-0">
-        <h5 class="fw-bold">Nexuscore</h5>
-        <p style="margin: 0;">We build, advise and repair!</p>
-      </div>
-      <div class="col-md-6">
-        <h6 class="fw-bold">Contact Us</h6>
-        <p style="margin: 0;">Email: troygrefalde@nexuscore.com.ph</p>
-        <p style="margin: 0;">Phone: +63 123 456 7890</p>
-      </div>
-    </div>
-    <hr style="border-color: rgba(255,255,255,0.2);">
-  </div>
-</footer>
+<!-- Flash message alert -->
+{% for message in app.flashes('success') %}
+  <script>
+      alert("{{ message|e('js') }}");
+  </script>
+{% endfor %}
+
 
 <script src="{{ asset('build/app.js') }}"></script>
+
 {% endblock %}

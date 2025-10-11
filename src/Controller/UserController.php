@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[Route('/user')]
 final class UserController extends AbstractController
@@ -22,38 +23,39 @@ final class UserController extends AbstractController
         ]);
     }
 
-    // Customer signup (frontend)
-    #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $user = new User();
-        $form = $this->createForm(UserType::class, $user, ['is_admin' => false]);
-        $form->handleRequest($request);
+  #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
+public function new(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $user = new User();
+    $form = $this->createForm(UserType::class, $user);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user->setRoles('ROLE_CUSTOMER'); // always CUSTOMER
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Always set ROLE_CUSTOMER as string
+        $user->setRoles('ROLE_CUSTOMER');
 
-            // Store password as plain text (not recommended for production)
-            $user->setPassword($user->getPassword());
+        // Store password as plain text (not recommended in production)
+        $user->setPassword($user->getPassword());
 
-            // Reset AUTO_INCREMENT if table empty
-            $count = $entityManager->getRepository(User::class)->count([]);
-            if ($count === 0) {
-                $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
-            }
-
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Account created successfully! Please log in.');
-            return $this->redirectToRoute('app_login');
+        // Reset AUTO_INCREMENT if table is empty
+        $count = $entityManager->getRepository(User::class)->count([]);
+        if ($count === 0) {
+            $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
         }
 
-        return $this->render('user/new.html.twig', [
-            'user' => $user,
-            'form' => $form,
-        ]);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Account created successfully! Please log in.');
+        return $this->redirectToRoute('app_login');
     }
+
+    return $this->render('user/new.html.twig', [
+        'user' => $user,
+        'form' => $form,
+    ]);
+}
+
 
         // Admin add user page
     #[Route('/addaccountadmin', name: 'app_user_add_admin', methods: ['GET', 'POST'])]

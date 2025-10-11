@@ -17,19 +17,19 @@ class Servicebooking
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Name is required!')]
-    #[Assert\Regex(
-        pattern: '/^[A-Za-z\s]+$/',
-        message: 'Name can only contain letters and spaces.'
-    )]
     private ?string $customerName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Please select a service type.')]
     private ?string $serviceType = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Please select an adviser category.')]
     private ?string $advisercategory = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'Preferred date is required.')]
+    #[Assert\GreaterThan('now', message: 'Preferred date must be in the future.')]
     private ?\DateTime $preferredDate = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -110,7 +110,7 @@ class Servicebooking
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->createdat;
     }
 
     public function setCreatedat(\DateTimeImmutable $createdat): static

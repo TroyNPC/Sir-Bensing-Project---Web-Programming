@@ -17,5 +17,7 @@ import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
 // ✅ DataTables Responsive extension
 import 'datatables.net-responsive-bs5';
 import 'datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 
 console.log('✅ DataTables responsive loaded');

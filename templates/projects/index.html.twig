@@ -41,16 +41,16 @@
     border-radius: 15px;
     transition: all 0.3s ease;
   }
-  .card-img-top {
-  width: 100%;
-  height: 200px;                /* Keeps consistent card height */
-  object-fit: contain !important; /* Ensures full image fits inside */
-  background-color: #f8f9fa;     /* Light background behind transparent images */
-  border: 1px solid #ddd;        /* Adds clean border */
-  border-radius: 10px;           /* Slight rounding to match card */
-  padding: 5px;                  /* Adds spacing inside the frame */
-  box-sizing: border-box;        /* Keeps layout consistent */
-}
+    .card-img-top {
+    width: 100%;
+    height: 200px;                /* Keeps consistent card height */
+    object-fit: contain !important; /* Ensures full image fits inside */
+    background-color: #f8f9fa;     /* Light background behind transparent images */
+    border: 1px solid #ddd;        /* Adds clean border */
+    border-radius: 10px;           /* Slight rounding to match card */
+    padding: 5px;                  /* Adds spacing inside the frame */
+    box-sizing: border-box;        /* Keeps layout consistent */
+  }
 
   .card:hover {
     transform: translateY(-6px);
@@ -136,38 +136,48 @@
         </div>
 
         <!-- Modal -->
-        <div class="modal fade" id="viewModal{{ product.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ product.id }}" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title fw-bold">{{ product.name }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Modal -->
+<div class="modal fade" id="viewModal{{ product.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ product.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">{{ product.name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <!-- Image Column -->
+          <div class="col-md-5 text-center">
+            {% if product.image %}
+              <img src="{{ asset('uploads/products/' ~ product.image) }}" 
+                   alt="{{ product.name }}" 
+                   class="img-fluid rounded-3 shadow-sm" 
+                   style="max-height:200px; object-fit:cover;">
+            {% else %}
+              <div class="d-flex align-items-center justify-content-center bg-light rounded-3 shadow-sm" style="height:200px;">
+                <span>No Image</span>
               </div>
-              <div class="modal-body text-start">
-{% if product.image %}
- <img src="{{ asset('uploads/products/' ~ product.image) }}"
-       alt="{{ product.name }}"
-       class="card-img-top"
-       style="height:200px; object-fit:cover;">
-{% else %}
-  <div class="d-flex align-items-center justify-content-center bg-light" style="height:200px;">
-    <span>No Image</span>
-  </div>
-{% endif %}
+            {% endif %}
+          </div>
 
-
-                <p><strong>Brand:</strong> {{ product.brand }}</p>
-                <p><strong>Category:</strong> {{ product.category }}</p>
-                <p><strong>Price:</strong> ₱{{ product.price }}</p>
-                <p><strong>Description:</strong><br>{{ product.description }}</p>
-                <p><strong>Available:</strong> {{ product.isavailable ? 'Yes' : 'No' }}</p>
-              </div>
-              <div class="modal-footer">
-                <a href="#" class="btn btn-orange">Order</a>
-              </div>
-            </div>
+          <!-- Details Column -->
+          <div class="col-md-7">
+            <h5 class="fw-bold text-dark mb-2">{{ product.name }}</h5>
+            <p class="text-muted mb-1"><strong>Brand:</strong> {{ product.brand }}</p>
+            <p class="text-muted mb-1"><strong>Category:</strong> {{ product.category }}</p>
+            <p class="text-secondary mb-2"><strong>Description:</strong> {{ product.description }}</p>
+            <p class="fw-bold text-orange mb-2">₱{{ product.price }}</p>
+            <p class="text-muted mb-0"><strong>Available:</strong> {{ product.isavailable ? 'Yes' : 'No' }}</p>
           </div>
         </div>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-orange w-100">Order</a>
+      </div>
+    </div>
+  </div>
+</div>
+
         {% endfor %}
       </div>
     {% endif %}
@@ -205,41 +215,38 @@
 </section>
 
 
-<!-- ABOUT -->
-<section class="py-5 bg-light">
+<!-- OUR SERVICES & HIGHLIGHTS -->
+<section class="py-5" style="background: #f5f5f5;">
   <div class="container text-center">
-    <h2 class="fw-bold mb-4 text-dark">About Nexuscore</h2>
-    <p class="mb-4 text-secondary" style="max-width: 800px; margin: auto;">
-      Nexuscore is your one-stop solution for all computer needs. We specialize in selling high-quality computer parts and providing reliable repair services. 
-      Our mission is to make technology accessible, affordable, and convenient for everyone.
+    <h2 class="fw-bold mb-4 text-dark">Our Services & Highlights</h2>
+    <p class="mb-5 text-secondary" style="max-width: 800px; margin: auto;">
+      At Nexuscore, we provide top-quality computer parts and repair services, tailored to your needs. Explore our convenient solutions for in-store, online, and home repairs.
     </p>
-    <div class="row justify-content-center g-4 mt-4">
+
+    <div class="row justify-content-center g-4">
       <div class="col-md-4">
-        <div class="card h-100 text-start">
-          <div class="card-body">
-            <h5 class="fw-bold text-orange">Available Service Booking</h5>
-            <p>Easily book any of our services online for faster and smoother service experience.</p>
-          </div>
+        <div class="card h-100 text-center shadow-sm p-3">
+          <h5 class="fw-bold text-orange">Online Service Booking</h5>
+          <p>Schedule services anytime with our easy-to-use online booking system.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card h-100 text-start">
-          <div class="card-body">
-            <h5 class="fw-bold text-orange">In-Store & Repair Services</h5>
-            <p>Purchase computer parts or have your devices repaired directly at Nexuscore.</p>
-          </div>
+        <div class="card h-100 text-center shadow-sm p-3">
+          <h5 class="fw-bold text-orange">In-Store & Repair Services</h5>
+          <p>Get your devices repaired or buy components directly at our store.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card h-100 text-start">
-          <div class="card-body">
-            <h5 class="fw-bold text-orange">Door-to-Door Repair</h5>
-            <p>Convenient repair services delivered straight to your home or office.</p>
-          </div>
+        <div class="card h-100 text-center shadow-sm p-3">
+          <h5 class="fw-bold text-orange">Door-to-Door Repairs</h5>
+          <p>Our technicians come to your home or office for hassle-free repairs.</p>
         </div>
       </div>
     </div>
   </div>
+</section>
+
+
 </section>
 
 <script src="{{ asset('build/app.js') }}"></script>

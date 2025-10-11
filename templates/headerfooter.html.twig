@@ -120,7 +120,7 @@
           <a class="nav-link fs-6 {% if 'services' in app.request.get('_route') %}fw-bold{% endif %}" href="{{ path('app_servicebooking_new') }}">Service Booking</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fs-6" href="#">About</a>
+          <a class="nav-link fs-6" href="{{ path('app_about')}}">About</a>
         </li>
         <li class="nav-item">
           <a class="nav-link fs-6 {% if 'contact' in app.request.get('_route') %}fw-bold{% endif %}" href="{{ path('app_contact') }}">Contact</a>

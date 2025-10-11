@@ -21,7 +21,8 @@
 
   <body style="overflow:auto">
     {% block body %}{% endblock %}
-    <script src ={{asset('assets/app.js')}}
-    <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('build/app.js') }}"></script>
+
+    <script src= "{{ asset('js/bootstrap.bundle.min.js') }}"></script>
   </body>
 </html>

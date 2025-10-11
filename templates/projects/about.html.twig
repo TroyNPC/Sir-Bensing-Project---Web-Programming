@@ -1,0 +1,104 @@
+{% extends 'headerfooter.html.twig' %}
+
+{% block title %}Nexuscore | About{% endblock %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ asset('build/app.css') }}">
+
+<style>
+  body {
+    font-family: 'Open Sans', sans-serif !important;
+    background: #fff;
+    color: #2e2e2e;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700;
+  }
+  p, a, li, button, span {
+    font-family: 'Open Sans', sans-serif !important;
+  }
+  :root {
+    --primary-dark: #2e2e2e;
+    --primary-orange: #F88F6A;
+  }
+  .btn-orange {
+    background: var(--primary-orange);
+    color: #fff;
+    border: none;
+    transition: 0.3s;
+  }
+  .btn-orange:hover {
+    background: #e47654;
+    color: #fff;
+  }
+  .text-orange { color: var(--primary-orange); }
+  .card {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+</style>
+
+<!-- HERO SECTION -->
+<section class="py-5 text-center" style="background: linear-gradient(135deg, #2e2e2e 50%, #F88F6A 50%); color: #fff;">
+  <div class="container">
+    <h1 class="display-4 fw-bold">About Nexuscore</h1>
+    <p class="lead fw-semibold">Your trusted partner for computer parts, repairs, and services.</p>
+  </div>
+</section>
+
+<!-- ABOUT NEXUSCORE -->
+<section class="py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4 mb-md-0">
+        <img src="{{ asset('nexuscore.jpg') }}" alt="Nexuscore Office" class="img-fluid rounded shadow-sm">
+      </div>
+      <div class="col-md-6">
+        <h2 class="fw-bold text-dark mb-3">Our Story</h2>
+        <p>Nexuscore is dedicated to providing high-quality computer parts and reliable repair services. We aim to make technology accessible, affordable, and convenient for everyone. Our skilled team ensures fast, dependable, and professional service for all your tech needs.</p>
+        <p>Whether you visit us in-store or request door-to-door support, Nexuscore is here to keep your devices running smoothly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES / FEATURES -->
+<section class="py-5 bg-light text-center">
+  <div class="container">
+    <h2 class="fw-bold mb-5 text-dark">Our Services</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm text-center p-4">
+          <div class="mb-3" style="font-size: 40px; color: var(--primary-orange);"><i class="bi bi-tools"></i></div>
+          <h5 class="fw-bold text-orange mb-3">In-Store Repairs</h5>
+          <p>Get your devices fixed quickly and reliably at our store using top-quality parts.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm text-center p-4">
+          <div class="mb-3" style="font-size: 40px; color: var(--primary-orange);"><i class="bi bi-truck"></i></div>
+          <h5 class="fw-bold text-orange mb-3">Door-to-Door Service</h5>
+          <p>Convenient repairs and tech support delivered straight to your home or office.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm text-center p-4">
+          <div class="mb-3" style="font-size: 40px; color: var(--primary-orange);"><i class="bi bi-box-seam"></i></div>
+          <h5 class="fw-bold text-orange mb-3">Premium Parts</h5>
+          <p>High-quality computer components for purchase, installation, or upgrades.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="{{ asset('build/app.js') }}"></script>
+{% endblock %}

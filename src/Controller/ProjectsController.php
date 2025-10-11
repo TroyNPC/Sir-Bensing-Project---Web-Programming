@@ -18,7 +18,7 @@ final class ProjectsController extends AbstractController
 
         shuffle($products);
 
-        $featured = array_slice($products, 0, 5);
+        $featured = array_slice($products, 0, 4);
         $gallery = array_slice($products, 0, 2);
 
         return $this->render('projects/index.html.twig', [
@@ -26,13 +26,32 @@ final class ProjectsController extends AbstractController
             'gallery' => $gallery,
         ]);
     }
+    #[Route('/product/{id}', name: 'chosen_product')]
+public function chosenProduct(EntityManagerInterface $em, int $id): Response
+{
+    $repository = $em->getRepository(Pcproducts::class);
+    $product = $repository->find($id);
+
+    if (!$product) {
+        throw $this->createNotFoundException('Product not found.');
+    }
+
+    return $this->render('projects/chosenproduct.html.twig', [
+        'product' => $product,
+    ]);
+
+}
 
     #[Route('/contact', name: 'app_contact')]
     public function contact(): Response
     {
         return $this->render('projects/contact.html.twig');
     }
-
+    #[Route('/about', name: 'app_about')]
+    public function about(): Response
+    {
+        return $this->render('projects/about.html.twig');
+    }
     #[Route('/products', name: 'app_products')]
     public function product(EntityManagerInterface $em): Response
     {

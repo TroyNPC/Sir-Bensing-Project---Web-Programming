@@ -18,6 +18,7 @@
                     <thead style="background-color:#F88F6A; color:white;">
                         <tr class="text-center">
                             <th class="fw-bold">ID</th>
+                            <th class="fw-bold">Customer Name</th>
                             <th class="fw-bold">Service Type</th>
                             <th class="fw-bold">Adviser Category</th>
                             <th class="fw-bold">Preferred Date</th>
@@ -30,11 +31,12 @@
                         {% for servicebooking in servicebookings %}
                         <tr>
                             <td class="text-center">{{ servicebooking.id }}</td>
+                            <td class="text-center">{{ servicebooking.customername }}</td>
                             <td class="text-center">{{ servicebooking.serviceType }}</td>
                             <td class="text-center">{{ servicebooking.advisercategory }}</td>
                             <td class="text-center">{{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : '' }}</td>
                             <td class="text-center">{{ servicebooking.notes }}</td>
-                            <td class="text-center">{{ servicebooking.createdAt ? servicebooking.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                            <td class="text-center">{{ servicebooking.getCreatedAt() ? servicebooking.getCreatedAt()|date('Y-m-d H:i:s') : '' }}</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                                     <button type="button"
@@ -52,6 +54,8 @@
                                             data-bs-target="#editModal{{ servicebooking.id }}">
                                         Edit
                                     </button>
+
+                                    {{ include('servicebooking/_delete_form.html.twig', { servicebooking : servicebooking }) }}
                                 </div>
                             </td>
                         </tr>
@@ -65,18 +69,14 @@
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body p-4">
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <ul class="list-unstyled mb-3">
-                                                    <li><strong class="text-secondary">Service Type:</strong> {{ servicebooking.serviceType }}</li>
-                                                    <li><strong class="text-secondary">Adviser Category:</strong> {{ servicebooking.advisercategory }}</li>
-                                                    <li><strong class="text-secondary">Preferred Date:</strong> {{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : 'N/A' }}</li>
-                                                    <li><strong class="text-secondary">Notes:</strong> {{ servicebooking.notes ?? 'No notes' }}</li>
-                                                    <li><strong class="text-secondary">Created At:</strong> {{ servicebooking.createdAt ? servicebooking.createdAt|date('Y-m-d H:i:s') : 'N/A' }}</li>
-                                                    <li><strong class="text-secondary">Customer Name:</strong> {{ servicebooking.customerName }}</li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                                        <ul class="list-unstyled mb-3">
+                                            <li><strong class="text-secondary">Service Type:</strong> {{ servicebooking.serviceType }}</li>
+                                            <li><strong class="text-secondary">Adviser Category:</strong> {{ servicebooking.advisercategory }}</li>
+                                            <li><strong class="text-secondary">Preferred Date:</strong> {{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : 'N/A' }}</li>
+                                            <li><strong class="text-secondary">Notes:</strong> {{ servicebooking.notes ?? 'No notes' }}</li>
+                                            <li><strong class="text-secondary">Created At:</strong> {{ servicebooking.getCreatedAt() ? servicebooking.getCreatedAt()|date('Y-m-d H:i:s') : 'N/A' }}</li>
+                                            <li><strong class="text-secondary">Customer Name:</strong> {{ servicebooking.customerName }}</li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -116,6 +116,10 @@
 .table-hover tbody tr:hover { background-color: #f8f9fa; }
 .badge { font-weight: 500; }
 .btn-sm { font-weight: 600; }
+#servicebookingTable{
+        white-space: nowrap; /* prevent wrapping */
+    vertical-align: middle;
+}
 </style>
 
 {% block javascripts %}
@@ -130,7 +134,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (hasData && !$.fn.DataTable.isDataTable('#servicebookingTable')) {
         $table.DataTable({
-            responsive: true,
+            responsive: false,
+            scrollX: true,
             paging: true,
             pageLength: 10,
             lengthChange: false,

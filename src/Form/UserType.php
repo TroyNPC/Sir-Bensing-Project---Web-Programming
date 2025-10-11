@@ -39,9 +39,9 @@ class UserType extends AbstractType
                 ],
             ])
             ->add('password', PasswordType::class, [
+                'mapped' => true,
                 'label' => 'Password',
                 'required' => !$isEdit,           // required on create, optional on edit
-                'mapped' => false,                 // do NOT automatically overwrite entity
                 'constraints' => !$isEdit ? [      // only validate NotBlank on create
                     new Assert\NotBlank(['message' => 'Password cannot be blank.']),
                     new Assert\Regex([
@@ -88,6 +88,7 @@ class UserType extends AbstractType
                     'Customer' => 'ROLE_CUSTOMER',
                 ],
                 'expanded' => true,
+                 'mapped' => true,      // maps to $user->roles
                 'multiple' => false,
             ]);
         }

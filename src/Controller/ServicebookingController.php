@@ -22,25 +22,30 @@ final class ServicebookingController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_servicebooking_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $servicebooking = new Servicebooking();
-        $form = $this->createForm(ServicebookingType::class, $servicebooking);
-        $form->handleRequest($request);
+#[Route('/new', name: 'app_servicebooking_new', methods: ['GET', 'POST'])]
+public function new(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $servicebooking = new Servicebooking();
+    $form = $this->createForm(ServicebookingType::class, $servicebooking);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($servicebooking);
-            $entityManager->flush();
+    if ($form->isSubmitted() && $form->isValid()) {
+        $entityManager->persist($servicebooking);
+        $entityManager->flush();
 
-            return $this->redirectToRoute('app_servicebooking_index', [], Response::HTTP_SEE_OTHER);
-        }
+        // Add a flash message to notify success
+        $this->addFlash('success', 'Your service booking has been successfully submitted!');
 
-        return $this->render('servicebooking/new.html.twig', [
-            'servicebooking' => $servicebooking,
-            'form' => $form,
-        ]);
+        // Redirect back to the same page or to another page
+        return $this->redirectToRoute('app_servicebooking_new');
     }
+
+    return $this->render('servicebooking/new.html.twig', [
+        'servicebooking' => $servicebooking,
+        'form' => $form,
+    ]);
+}
+
 
     #[Route('/{id}', name: 'app_servicebooking_show', methods: ['GET'])]
     public function show(Servicebooking $servicebooking): Response

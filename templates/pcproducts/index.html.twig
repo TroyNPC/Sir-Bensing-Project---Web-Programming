@@ -25,7 +25,7 @@
     <div class="card border-0 shadow-sm rounded-4 mx-1">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="pcproductsTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1200px;">
+                <table id="pcproductsTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1600px;">
                     <thead style="background-color:#F88F6A; color:white;">
                         <tr class="text-center">
                             <th class="fw-bold">ID</th>
@@ -34,7 +34,6 @@
                             <th class="fw-bold">Category</th>
                             <th class="fw-bold">Brand</th>
                             <th class="fw-bold">Price</th>
-                            <th class="fw-bold">Description</th>
                             <th class="fw-bold">Created At</th>
                             <th class="fw-bold">Updated At</th>
                             <th class="fw-bold">Available</th>
@@ -69,11 +68,6 @@
                             <td class="text-center">{{ pcproduct.brand }}</td>
 
                             <td class="text-center">${{ pcproduct.price|number_format(2, '.', ',') }}</td>
-
-                            <!-- Description -->
-                            <td style="max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                {{ pcproduct.description }}
-                            </td>
 
                             <td class="text-center">{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d') : '' }}</td>
                             <td class="text-center">{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d') : '' }}</td>
@@ -226,7 +220,10 @@
 background-color: #F88F6A !important;
 border-color: #F88F6A !important;
 }
-
+#pcproductsTable th, #pcproductsTable td {
+    white-space: nowrap; /* prevent wrapping */
+    vertical-align: middle;
+}
 /* ✅ Add Modal Image Preview Only */
 .preview-img {
 display: block;
@@ -253,6 +250,7 @@ background: #f9f9f9 url("{{ asset('images/placeholder-image.png') }}") center/60
 {% block javascripts %}
 {{ parent() }}
 <script>
+
 document.addEventListener("DOMContentLoaded", function () {
     $.fn.dataTable.ext.errMode = 'none';
 
@@ -260,9 +258,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const rowCount = $table.find('tbody tr').length;
     const hasData = rowCount > 0 && !$table.find('tbody tr td').first().text().includes('No records');
 
+    let tableInstance; // Store the DataTable instance
+
     if (hasData && !$.fn.DataTable.isDataTable('#pcproductsTable')) {
-        $table.DataTable({
-            responsive: true,
+        tableInstance = $table.DataTable({
+            responsive: false,
             paging: true,
             pageLength: 10,
             lengthChange: false,
@@ -283,134 +283,138 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ✅ Image preview + inline validation
-    function setupImagePreview(form) {
-        const fileInput = form.querySelector('input[type="file"]');
-        if (!fileInput) return;
+function setupImagePreview(form) {
+    const fileInput = form.querySelector('input[type="file"]');
+    if (!fileInput) return;
 
-        let preview = form.querySelector('.preview-img');
-        if (!preview) {
-            preview = document.createElement('img');
-            preview.classList.add('preview-img', 'empty');
-            fileInput.parentNode.insertBefore(preview, fileInput);
+    // ✅ Ensure preview exists first
+    let preview = form.querySelector('.preview-img');
+    if (!preview) {
+        preview = document.createElement('img');
+        preview.classList.add('preview-img', 'empty');
+        fileInput.parentNode.insertBefore(preview, fileInput);
+    }
+
+    // If the file input already has a file selected (e.g., cached by browser)
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = evt => {
+                preview.src = evt.target.result;
+                preview.classList.remove('empty');
+            };
+            reader.readAsDataURL(file);
         }
+    }
 
-        let error = document.createElement('div');
+    // Error container
+    let error = form.querySelector('.file-error');
+    if (!error) {
+        error = document.createElement('div');
         error.classList.add('file-error');
         fileInput.parentNode.insertBefore(error, fileInput.nextSibling);
-
-        fileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = evt => {
-                    preview.src = evt.target.result;
-                    preview.classList.remove('empty');
-                };
-                reader.readAsDataURL(file);
-                error.textContent = '';
-            } else {
-                preview.src = '';
-                preview.classList.add('empty');
-                error.textContent = '❌ Please select a valid image file (JPG, PNG, GIF, or WEBP).';
-                fileInput.value = '';
-            }
-        });
     }
-// ---------- EDIT MODAL ----------
-document.querySelectorAll('[id^="editModal"]').forEach(modal => {
-    modal.addEventListener('show.bs.modal', function (event) {
-        const id = this.id.replace('editModal', '');
-        const modalBody = document.getElementById('editModalBody' + id);
-        modalBody.innerHTML = `
-            <div class="text-center text-muted py-3">
-                <div class="spinner-border text-dark"></div>
-                <p class="mt-2 mb-0 small">Loading form...</p>
-            </div>`;
 
-        // ✅ Find current image in the table row you clicked
-        const button = event.relatedTarget;
-        const row = button.closest('tr');
-        const currentImage = row?.querySelector('img')?.getAttribute('src');
-
-        fetch(`/pcproducts/${id}/edit`)
-            .then(res => res.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const form = doc.querySelector('form');
-
-                if (form) {
-                    // ✅ Make sure form action is correct
-                    form.action = `/pcproducts/${id}/edit`;
-
-                    // ✅ Restrict file input to images
-                    const fileInput = form.querySelector('input[type="file"]');
-                    if (fileInput) fileInput.setAttribute('accept', 'image/*');
-
-                    // ✅ Create a single image preview (existing + new)
-                    const imageContainer = document.createElement('div');
-                    imageContainer.classList.add('text-center', 'mb-3');
-
-                    const previewImg = document.createElement('img');
-                    previewImg.classList.add('img-fluid', 'rounded', 'shadow-sm');
-                    previewImg.style.maxHeight = '240px';
-                    previewImg.style.objectFit = 'contain';
-                    previewImg.style.backgroundColor = '#f9f9f9';
-                    previewImg.style.padding = '8px';
-                    previewImg.style.border = '2px dashed #ddd';
-
-                    // ✅ Load the existing product image (from the row)
-                    if (currentImage) {
-                        previewImg.src = currentImage;
-                    } else {
-                        previewImg.src = "{{ asset('images/placeholder-image.png') }}";
-                        previewImg.classList.add('empty');
-                    }
-
-                    imageContainer.appendChild(previewImg);
-                    form.insertBefore(imageContainer, form.firstChild);
-
-                    // ✅ Inline error message
-                    const errorMsg = document.createElement('div');
-                    errorMsg.classList.add('file-error', 'text-danger', 'mt-1', 'small');
-                    fileInput?.parentNode.insertBefore(errorMsg, fileInput.nextSibling);
-
-                    // ✅ When file changes, update preview
-                    fileInput?.addEventListener('change', e => {
-                        const file = e.target.files[0];
-                        if (file && file.type.startsWith('image/')) {
-                            const reader = new FileReader();
-                            reader.onload = evt => {
-                                previewImg.src = evt.target.result;
-                                previewImg.classList.remove('empty');
-                            };
-                            reader.readAsDataURL(file);
-                            errorMsg.textContent = '';
-                        } else {
-                            errorMsg.textContent = '❌ Please select a valid image file (JPG, PNG, GIF, or WEBP).';
-                            fileInput.value = '';
-                        }
-                    });
-
-                    // ✅ Style submit button
-                    const submit = form.querySelector('button[type="submit"]');
-                    if (submit) submit.classList.add('btn-warning', 'fw-semibold');
-
-                    // ✅ Inject form
-                    modalBody.innerHTML = '';
-                    modalBody.appendChild(form);
-                } else {
-                    modalBody.innerHTML = '<p class="text-danger">Could not load edit form.</p>';
-                }
-            })
-            .catch(() => {
-                modalBody.innerHTML = '<p class="text-danger">Failed to load form.</p>';
-            });
+    // Listen for changes
+    fileInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = evt => {
+                preview.src = evt.target.result;
+                preview.classList.remove('empty');
+            };
+            reader.readAsDataURL(file);
+            error.textContent = '';
+        } else {
+            preview.src = '';
+            preview.classList.add('empty');
+            error.textContent = '❌ Please select a valid image file (JPG, PNG, GIF, or WEBP).';
+            fileInput.value = '';
+        }
     });
-});
+}
 
 
+    // ---------- EDIT MODAL ----------
+    document.querySelectorAll('[id^="editModal"]').forEach(modal => {
+        modal.addEventListener('show.bs.modal', function (event) {
+            const id = this.id.replace('editModal', '');
+            const modalBody = document.getElementById('editModalBody' + id);
+            modalBody.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <div class="spinner-border text-dark"></div>
+                    <p class="mt-2 mb-0 small">Loading form...</p>
+                </div>`;
 
+            const button = event.relatedTarget;
+            const row = button.closest('tr');
+            const currentImage = row?.querySelector('img')?.getAttribute('src');
+
+            fetch(`/pcproducts/${id}/edit`)
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const form = doc.querySelector('form');
+
+                    if (form) {
+                        form.action = `/pcproducts/${id}/edit`;
+
+                        const fileInput = form.querySelector('input[type="file"]');
+                        if (fileInput) fileInput.setAttribute('accept', 'image/*');
+
+                        const imageContainer = document.createElement('div');
+                        imageContainer.classList.add('text-center', 'mb-3');
+
+                        const previewImg = document.createElement('img');
+                        previewImg.classList.add('img-fluid', 'rounded', 'shadow-sm');
+                        previewImg.style.maxHeight = '240px';
+                        previewImg.style.objectFit = 'contain';
+                        previewImg.style.backgroundColor = '#f9f9f9';
+                        previewImg.style.padding = '8px';
+                        previewImg.style.border = '2px dashed #ddd';
+                        previewImg.src = currentImage || "{{ asset('images/placeholder-image.png') }}";
+                        if (!currentImage) previewImg.classList.add('empty');
+
+                        imageContainer.appendChild(previewImg);
+                        form.insertBefore(imageContainer, form.firstChild);
+
+                        const errorMsg = document.createElement('div');
+                        errorMsg.classList.add('file-error', 'text-danger', 'mt-1', 'small');
+                        fileInput?.parentNode.insertBefore(errorMsg, fileInput.nextSibling);
+
+                        fileInput?.addEventListener('change', e => {
+                            const file = e.target.files[0];
+                            if (file && file.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = evt => {
+                                    previewImg.src = evt.target.result;
+                                    previewImg.classList.remove('empty');
+                                };
+                                reader.readAsDataURL(file);
+                                errorMsg.textContent = '';
+                            } else {
+                                errorMsg.textContent = '❌ Please select a valid image file (JPG, PNG, GIF, or WEBP).';
+                                fileInput.value = '';
+                            }
+                        });
+
+                        const submit = form.querySelector('button[type="submit"]');
+                        if (submit) submit.classList.add('btn-warning', 'fw-semibold');
+
+                        modalBody.innerHTML = '';
+                        modalBody.appendChild(form);
+                    } else {
+                        modalBody.innerHTML = '<p class="text-danger">Could not load edit form.</p>';
+                    }
+                })
+                .catch(() => {
+                    modalBody.innerHTML = '<p class="text-danger">Failed to load form.</p>';
+                });
+        });
+    });
 
     // ---------- ADD PRODUCT MODAL ----------
     const addProductModal = document.getElementById('addProductModal');
@@ -436,7 +440,7 @@ document.querySelectorAll('[id^="editModal"]').forEach(modal => {
                         modalBody.appendChild(form);
                         setupImagePreview(form);
                     } else {
-                        modalBody.innerHTML = '<p class=\"text-danger\">Could not load add form.</p>';
+                        modalBody.innerHTML = '<p class="text-danger">Could not load add form.</p>';
                     }
                 })
                 .catch(() => modalBody.innerHTML = '<p class="text-danger">Failed to load form.</p>');
@@ -445,4 +449,5 @@ document.querySelectorAll('[id^="editModal"]').forEach(modal => {
 });
 </script>
 {% endblock %}
+
 {% endblock %}

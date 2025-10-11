@@ -69,7 +69,7 @@
   </div>
 
   <!-- Header -->
-  <div class="admin-header shifted d-flex align-items-center justify-content-between px-4 py-2" id="adminHeader">
+  <div class="admin-header d-flex align-items-center justify-content-between px-4 py-2" id="adminHeader">
     <div class="d-flex align-items-center">
       <button id="toggleSidebar" class="btn btn-link text-white me-3 fs-4">
         <i class="bi bi-list"></i>
@@ -83,14 +83,14 @@
         <span class="fw-bold" style="color: var(--accent);">Admin</span>
       </a>
       <ul class="dropdown-menu dropdown-menu-end shadow">
-        <li><a class="dropdown-item" href="#">Account Settings</a></li>.
+        <li><a class="dropdown-item" href="#">Account Settings</a></li>
         <li><a class="dropdown-item" href="#">Logout</a></li>
       </ul>
     </div>
   </div>
 
   <!-- Main Admin Content -->
-  <div class="main-content expanded" id="mainContent">
+  <div class="main-content" id="mainContent">
     {% block content %}{% endblock %}
   </div>
 </div>
@@ -102,18 +102,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const header = document.getElementById('adminHeader');
   const toggleBtn = document.getElementById('toggleSidebar');
 
-  // Sidebar starts hidden
+  // ✅ Sidebar starts already visible
   sidebar.classList.remove('collapsed');
-  mainContent.classList.add('expanded');
-  header.classList.add('shifted');
+  mainContent.classList.remove('expanded');
+  header.classList.remove('shifted');
 
+  // ✅ Toggle open/close
   toggleBtn.addEventListener('click', () => {
     sidebar.classList.toggle('collapsed');
     mainContent.classList.toggle('expanded');
     header.classList.toggle('shifted');
   });
 
-  // Animate dropdown arrows
+  // Rotate collapse icons
   document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
     const icon = button.querySelector('.toggle-icon');
     const target = document.querySelector(button.getAttribute('data-bs-target'));
@@ -136,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 body {
   font-family: "Montserrat", sans-serif;
+  background-color: var(--light-bg);
 }
 
 .admin-layout {
@@ -155,12 +157,12 @@ body {
   bottom: 0;
   left: 0;
   overflow-y: auto;
-  transform: translateX(-100%);
+  transform: translateX(0); /* ✅ Visible by default */
   transition: transform 0.3s ease;
   z-index: 1000;
 }
 .sidebar.collapsed {
-  transform: translateX(0);
+  transform: translateX(-100%);
 }
 
 /* Header */
@@ -177,16 +179,12 @@ body {
   transition: all 0.3s ease;
   box-shadow: none;
 }
-
 .admin-header.shifted {
   margin-left: 0;
   width: 100%;
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 }
 
-body{
-  background-color: var(--light-bg);
-}
 /* Main content */
 .main-content {
   margin-left: 240px;

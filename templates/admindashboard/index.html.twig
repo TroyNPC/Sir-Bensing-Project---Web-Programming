@@ -8,9 +8,9 @@
     <div class="col-md-4">
       <div class="card shadow border-0" style="background: linear-gradient(135deg, #ff9a8b, #ff6a88); color: white;">
         <div class="card-body">
-          <h5>Total Sales</h5>
-          <h2>${{ totalSales|number_format(2, '.', ',') }}</h2>
-          <p>Increased by {{ salesGrowth }}%</p>
+          <h5>Total Produce Prices</h5>
+          <h2>₱ {{ totalSales|number_format(2, '.', ',') }}</h2>
+          <p>Potential Growth by {{ salesGrowth }}%</p>
         </div>
       </div>
     </div>
@@ -40,7 +40,7 @@
         <div class="card-body">
           <h5>Registered Users</h5>
           <h2>{{ userCount }}</h2>  
-          <p>Active accounts</p>
+          <p>Made Accounts</p>
         </div>
       </div>
     </div>
