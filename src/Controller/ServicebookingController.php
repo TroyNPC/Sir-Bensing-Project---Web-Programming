@@ -36,6 +36,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         // Add a flash message to notify success
         $this->addFlash('success', 'Your service booking has been successfully submitted!');
 
+
         // Redirect back to the same page or to another page
         return $this->redirectToRoute('app_servicebooking_new');
     }
@@ -73,14 +74,24 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         ]);
     }
 
-    #[Route('/{id}', name: 'app_servicebooking_delete', methods: ['POST'])]
-    public function delete(Request $request, Servicebooking $servicebooking, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$servicebooking->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($servicebooking);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_servicebooking_index', [], Response::HTTP_SEE_OTHER);
+#[Route('/{id}', name: 'app_servicebooking_delete', methods: ['POST'])]
+public function delete(Request $request, Servicebooking $servicebooking, EntityManagerInterface $entityManager): Response
+{
+    if (!$servicebooking) {
+        $this->addFlash('error', '⚠️ Booking not found or already deleted.');
+        return $this->redirectToRoute('app_servicebooking_index');
     }
+
+    $submittedToken = $request->request->get('_token');
+
+    if ($this->isCsrfTokenValid('delete'.$servicebooking->getId(), $submittedToken)) {
+        $entityManager->remove($servicebooking);
+        $entityManager->flush();
+    } else {
+        $this->addFlash('error', '⚠️ Invalid CSRF token.');
+    }
+
+    return $this->redirectToRoute('app_servicebooking_index', [], Response::HTTP_SEE_OTHER);
+}
+
 }

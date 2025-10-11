@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PcproductsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -50,6 +52,17 @@ class Pcproducts
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
+    /**
+     * @var Collection<int, InventoryLog>
+     */
+    #[ORM\OneToMany(targetEntity: InventoryLog::class, mappedBy: 'productname')]
+    private Collection $inventorylogs;
+
+    public function __construct()
+    {
+        $this->inventorylogs = new ArrayCollection();
+    }
 
 
     // ----------------- GETTERS & SETTERS -----------------
@@ -162,5 +175,35 @@ class Pcproducts
     public function onPrePersist(): void
     {
         $this->createdat = new \DateTimeImmutable();
+    }
+
+    /**
+     * @return Collection<int, InventoryLog>
+     */
+    public function getInventorylogs(): Collection
+    {
+        return $this->inventorylogs;
+    }
+
+    public function addInventorylog(InventoryLog $inventorylog): static
+    {
+        if (!$this->inventorylogs->contains($inventorylog)) {
+            $this->inventorylogs->add($inventorylog);
+            $inventorylog->setProductname($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInventorylog(InventoryLog $inventorylog): static
+    {
+        if ($this->inventorylogs->removeElement($inventorylog)) {
+            // set the owning side to null (unless already changed)
+            if ($inventorylog->getProductname() === $this) {
+                $inventorylog->setProductname(null);
+            }
+        }
+
+        return $this;
     }
 }

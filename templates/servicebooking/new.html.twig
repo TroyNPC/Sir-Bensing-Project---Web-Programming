@@ -2,13 +2,19 @@
 
 {% block title %}Nexuscore | New Service Booking{% endblock %}
 
-{% block content %}
-<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-<link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="{{ asset('build/app.css') }}">
+{% block body %}
 
 <style>
-  body { font-family: 'Montserrat', 'Open Sans', sans-serif !important; overflow-x: hidden; background: #fff; }
+      a, header, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700;
+  }
+    p,li, button, span {
+      font-family: 'Open Sans', sans-serif !important;
+    }
+    h1, h2, h3, .heading {
+      font-family: 'Montserrat', sans-serif;
+    }
   .btn-orange { background: #F88F6A; color: #fff; transition: 0.3s; }
   .btn-orange:hover { background: #e47654; color: #fff; }
   .card:hover { transform: translateY(-6px); transition: 0.3s ease; }
@@ -78,8 +84,5 @@
       alert("{{ message|e('js') }}");
   </script>
 {% endfor %}
-
-
-<script src="{{ asset('build/app.js') }}"></script>
 
 {% endblock %}

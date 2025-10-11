@@ -1,51 +1,53 @@
 {% extends 'headerfooter.html.twig' %}
 
-
 {% block title %}Login{% endblock %}
 
-{% block content %}
-<div class="container-fluid py-5" style="max-width: 500px; margin: 0 auto;">
-  <div class="card shadow-sm border-0 rounded-3">
-    <div class="card-body p-4">
-      <h3 class="fw-bold text-center mb-4" style="color:#2e2e2e;">Login</h3>
+{% block body %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card shadow-lg border-0 rounded-4 w-100" style="max-width: 450px;">
+    
+    <!-- Card Header -->
+    <div class="card-header text-center bg-white border-0 py-4">
+      <h3 class="fw-bold" style="color:#2e2e2e;">Welcome Back</h3>
+      <p class="text-muted mb-0">Login to your account</p>
+    </div>
 
+    <!-- Card Body -->
+    <div class="card-body p-4">
       {{ form_start(form) }}
 
       <!-- EMAIL -->
       <div class="mb-3">
-        {{ form_label(form.email, 'Email', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-        {{ form_widget(form.email, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your email'} }) }}
+        {{ form_label(form.email, 'Email', { 'label_attr': {'class': 'form-label fw-semibold'} }) }}
+        {{ form_widget(form.email, { 'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Enter your email'} }) }}
         {{ form_errors(form.email) }}
       </div>
 
       <!-- PASSWORD -->
       <div class="mb-3">
-        {{ form_label(form.password, 'Password', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-        {{ form_widget(form.password, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your password'} }) }}
+        {{ form_label(form.password, 'Password', { 'label_attr': {'class': 'form-label fw-semibold'} }) }}
+        {{ form_widget(form.password, { 'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Enter your password'} }) }}
         {{ form_errors(form.password) }}
       </div>
 
-      <!-- LOGIN & SIGN UP buttons side by side -->
-      <div class="d-flex justify-content-center gap-2 mt-3">
-        <button type="submit" class="btn fw-bold"
-                style="background-color:#F88F6A; color:white; border:none; border-radius:6px; padding:0.375rem 0.75rem; font-size:0.95rem;">
-          Login
-        </button>
-        <a href="{{ path('app_user_new') }}" class="btn fw-bold"
-           style="background-color:#F88F6A; color:white; border:none; border-radius:6px; padding:0.375rem 0.75rem; font-size:0.95rem;">
-          Sign Up
-        </a>
+      <!-- Login Button -->
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-orange btn-lg fw-bold">Login</button>
       </div>
 
-      <!-- Go Back button -->
-      <div class="text-center mt-3">
-        <a href="{{ path('app_projects') }}" class="btn fw-bold"
-           style="background-color:#F88F6A; color:white; border:none; border-radius:6px; padding:0.375rem 0.75rem; font-size:0.95rem;">
-          Go Back
-        </a>
+      <!-- Sign Up Link -->
+      <div class="text-center mb-3">
+        <p class="mb-0">Don't have an account? 
+          <a href="{{ path('app_user_new') }}" class="fw-bold text-orange">Sign Up</a>
+        </p>
       </div>
 
-      <!-- Flash messages -->
+      <!-- Go Back -->
+      <div class="text-center">
+        <a href="{{ path('app_projects') }}" class="btn btn-outline-secondary btn-sm fw-semibold">Go Back</a>
+      </div>
+
+      <!-- Flash Messages -->
       {% for message in app.flashes('error') %}
         <div class="alert alert-danger mt-3">{{ message }}</div>
       {% endfor %}
@@ -56,21 +58,45 @@
 </div>
 
 <style>
+/* Card & Buttons */
 .card {
   background-color: #fff;
   overflow: hidden;
 }
 
+.btn-orange {
+  background-color: #F88F6A;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-orange:hover {
+  background-color: #e37453;
+  transform: scale(1.02);
+}
+
+.text-orange {
+  color: #F88F6A;
+  transition: color 0.3s ease;
+}
+
+.text-orange:hover {
+  color: #e37453;
+  text-decoration: none;
+}
+
+/* Form Labels */
 .form-label {
   color: #2e2e2e;
 }
 
-.btn:hover {
-  background-color: #e37453 !important;
-}
-
-main, .main-content, .container-fluid {
-  overflow: visible !important;
+/* Adjust spacing on smaller screens */
+@media (max-width: 576px) {
+  .card {
+    margin: 1rem;
+  }
 }
 </style>
 {% endblock %}
