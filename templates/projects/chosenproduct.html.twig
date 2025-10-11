@@ -3,6 +3,7 @@
 {% block title %}{{ product.name }} | {{ product.brand }}{% endblock %}
 
 {% block stylesheets %}
+  {{ parent() }}
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:wght@400;500;600&display=swap');
 
@@ -119,7 +120,7 @@
     <!-- Details Section -->
     <div class="product-details">
       <div class="breadcrumb">
-       <strong>   Products  - {{ product.category }}</strong>
+        <strong>Products - {{ product.category }}</strong>
       </div>
 
       <h1 class="product-name">{{ product.name }}</h1>

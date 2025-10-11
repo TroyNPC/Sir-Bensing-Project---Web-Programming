@@ -45,6 +45,7 @@ class Pcproducts
     private ?\DateTimeImmutable $createdat = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\NotBlank(message: "Date cannot be empty.")]
     private ?\DateTime $updatedat = null;
 
     #[ORM\Column]

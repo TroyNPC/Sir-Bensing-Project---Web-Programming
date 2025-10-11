@@ -23,7 +23,7 @@ final class UserController extends AbstractController
         ]);
     }
 
-  #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
+ #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
 public function new(Request $request, EntityManagerInterface $entityManager): Response
 {
     $user = new User();
@@ -31,13 +31,13 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        // Always set ROLE_CUSTOMER as string
+        // Set default role
         $user->setRoles('ROLE_CUSTOMER');
 
-        // Store password as plain text (not recommended in production)
+        // Store password (plain text for now; hash in production)
         $user->setPassword($user->getPassword());
 
-        // Reset AUTO_INCREMENT if table is empty
+        // Reset AUTO_INCREMENT if table empty
         $count = $entityManager->getRepository(User::class)->count([]);
         if ($count === 0) {
             $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
@@ -46,7 +46,10 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         $entityManager->persist($user);
         $entityManager->flush();
 
-        $this->addFlash('success', 'Account created successfully! Please log in.');
+        // Add flash success message
+        $this->addFlash('success', '✅ Registration successful! You can now log in.');
+
+        // Redirect to login page
         return $this->redirectToRoute('app_login');
     }
 

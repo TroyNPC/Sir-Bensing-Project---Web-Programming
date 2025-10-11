@@ -30,12 +30,19 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
+
+        // Reset AUTO_INCREMENT to 1 if table is empty
+        $count = $entityManager->getRepository(Servicebooking::class)->count([]);
+        if ($count === 0) {
+            $tableName = $entityManager->getClassMetadata(Servicebooking::class)->getTableName();
+            $entityManager->getConnection()->exec("ALTER TABLE `$tableName` AUTO_INCREMENT = 1");
+        }
+
         $entityManager->persist($servicebooking);
         $entityManager->flush();
 
         // Add a flash message to notify success
         $this->addFlash('success', 'Your service booking has been successfully submitted!');
-
 
         // Redirect back to the same page or to another page
         return $this->redirectToRoute('app_servicebooking_new');
@@ -46,6 +53,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         'form' => $form,
     ]);
 }
+
 
 
     #[Route('/{id}', name: 'app_servicebooking_show', methods: ['GET'])]
