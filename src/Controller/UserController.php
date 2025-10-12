@@ -23,7 +23,7 @@ final class UserController extends AbstractController
         ]);
     }
 
- #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
+  #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
 public function new(Request $request, EntityManagerInterface $entityManager): Response
 {
     $user = new User();
@@ -37,10 +37,18 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         // Store password (plain text for now; hash in production)
         $user->setPassword($user->getPassword());
 
-        // Reset AUTO_INCREMENT if table empty
+        // 🟢 Reset AUTO_INCREMENT if table is empty
         $count = $entityManager->getRepository(User::class)->count([]);
+        $connection = $entityManager->getConnection();
+        $tableName = $entityManager->getClassMetadata(User::class)->getTableName();
+
         if ($count === 0) {
-            $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
+            $connection->executeStatement("ALTER TABLE `$tableName` AUTO_INCREMENT = 1");
+        } else {
+            // 🟢 Otherwise, adjust based on highest existing ID
+            $maxId = $connection->fetchOne("SELECT MAX(id) FROM `$tableName`");
+            $nextId = ((int)$maxId) + 1;
+            $connection->executeStatement("ALTER TABLE `$tableName` AUTO_INCREMENT = $nextId");
         }
 
         $entityManager->persist($user);
@@ -59,8 +67,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
     ]);
 }
 
-
-        // Admin add user page
+    // Admin add user page
     #[Route('/addaccountadmin', name: 'app_user_add_admin', methods: ['GET', 'POST'])]
     public function addAdmin(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -81,11 +88,12 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
             }
             $user->setPassword($password);
 
-            // Reset AUTO_INCREMENT if table empty
-            $count = $entityManager->getRepository(User::class)->count([]);
-            if ($count === 0) {
-                $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
-            }
+            // 🟢 Adjust AUTO_INCREMENT based on highest ID
+            $maxId = $entityManager->getConnection()
+                ->fetchOne('SELECT MAX(id) FROM user');
+            $nextId = $maxId ? $maxId + 1 : 1;
+            $entityManager->getConnection()
+                ->executeStatement('ALTER TABLE user AUTO_INCREMENT = ' . $nextId);
 
             $entityManager->persist($user);
             $entityManager->flush();
@@ -100,7 +108,6 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         ]);
     }
 
-
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
     public function show(User $user): Response
     {
@@ -109,60 +116,53 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         ]);
     }
 
-#[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, User $user, EntityManagerInterface $entityManager): Response
-{
-    // 🟡 Store the current password before handling the form
-    $currentPassword = $user->getPassword();
+    #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        $currentPassword = $user->getPassword();
 
-    // 🟢 Create form with edit flag (password optional)
-    $form = $this->createForm(UserType::class, $user, [
-        'is_admin' => true,
-        'is_edit' => true,
-    ]);
-    $form->handleRequest($request);
+        $form = $this->createForm(UserType::class, $user, [
+            'is_admin' => true,
+            'is_edit' => true,
+        ]);
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
+            $roles = $form->get('roles')->getData() ?: 'ROLE_CUSTOMER';
+            $user->setRoles($roles);
 
-        // ✅ Handle roles (same logic as addAdmin)
-        $roles = $form->get('roles')->getData() ?: 'ROLE_CUSTOMER';
-        $user->setRoles($roles);
+            $newPassword = $form->get('password')->getData();
+            if (!empty($newPassword)) {
+                $user->setPassword($newPassword);
+            } else {
+                $user->setPassword($currentPassword);
+            }
 
-        // ✅ Handle password
-        $newPassword = $form->get('password')->getData();
-        if (!empty($newPassword)) {
-            $user->setPassword($newPassword);
-        } else {
-            // Keep old password if no new one provided
-            $user->setPassword($currentPassword);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'User updated successfully.');
+            return $this->redirectToRoute('app_user_index');
         }
 
-        $entityManager->flush();
-
-        $this->addFlash('success', 'User updated successfully.');
-        return $this->redirectToRoute('app_user_index');
+        return $this->render('user/edit.html.twig', [
+            'user' => $user,
+            'form' => $form->createView(),
+        ]);
     }
-
-    return $this->render('user/edit.html.twig', [
-        'user' => $user,
-        'form' => $form->createView(),
-    ]);
-}
-
-
 
     #[Route('/{id}', name: 'app_user_delete', methods: ['POST'])]
     public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
             $entityManager->remove($user);
             $entityManager->flush();
 
-            // Reset AUTO_INCREMENT if table empty
-            $count = $entityManager->getRepository(User::class)->count([]);
-            if ($count === 0) {
-                $entityManager->getConnection()->exec('ALTER TABLE user AUTO_INCREMENT = 1');
-            }
+            // 🟢 Adjust AUTO_INCREMENT based on highest ID after deletion
+            $maxId = $entityManager->getConnection()
+                ->fetchOne('SELECT MAX(id) FROM user');
+            $nextId = $maxId ? $maxId + 1 : 1;
+            $entityManager->getConnection()
+                ->executeStatement('ALTER TABLE user AUTO_INCREMENT = ' . $nextId);
         }
 
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);

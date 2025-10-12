@@ -31,20 +31,25 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
 
     if ($form->isSubmitted() && $form->isValid()) {
 
-        // Reset AUTO_INCREMENT to 1 if table is empty
+        // 🧮 Reset AUTO_INCREMENT if table is empty
         $count = $entityManager->getRepository(Servicebooking::class)->count([]);
+        $tableName = $entityManager->getClassMetadata(Servicebooking::class)->getTableName();
+
         if ($count === 0) {
-            $tableName = $entityManager->getClassMetadata(Servicebooking::class)->getTableName();
-            $entityManager->getConnection()->exec("ALTER TABLE `$tableName` AUTO_INCREMENT = 1");
+            $entityManager->getConnection()->executeStatement("ALTER TABLE `$tableName` AUTO_INCREMENT = 1");
         }
+
+        // ✅ Always adjust AUTO_INCREMENT based on the current max ID
+        $maxId = $entityManager->getConnection()->fetchOne("SELECT MAX(id) FROM `$tableName`");
+        $nextId = $maxId ? ((int)$maxId + 1) : 1;
+        $entityManager->getConnection()->executeStatement("ALTER TABLE `$tableName` AUTO_INCREMENT = $nextId");
 
         $entityManager->persist($servicebooking);
         $entityManager->flush();
 
-        // Add a flash message to notify success
-        $this->addFlash('success', 'Your service booking has been successfully submitted!');
+        $this->addFlash('success', '✅ Your service booking has been successfully submitted!');
 
-        // Redirect back to the same page or to another page
+        // Redirect back to form
         return $this->redirectToRoute('app_servicebooking_new');
     }
 
@@ -53,7 +58,6 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         'form' => $form,
     ]);
 }
-
 
 
     #[Route('/{id}', name: 'app_servicebooking_show', methods: ['GET'])]
@@ -73,6 +77,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->addFlash('success', '✅ Booking updated successfully!');
             return $this->redirectToRoute('app_servicebooking_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -82,24 +87,33 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         ]);
     }
 
-#[Route('/{id}', name: 'app_servicebooking_delete', methods: ['POST'])]
-public function delete(Request $request, Servicebooking $servicebooking, EntityManagerInterface $entityManager): Response
-{
-    if (!$servicebooking) {
-        $this->addFlash('error', '⚠️ Booking not found or already deleted.');
-        return $this->redirectToRoute('app_servicebooking_index');
+    #[Route('/{id}', name: 'app_servicebooking_delete', methods: ['POST'])]
+    public function delete(Request $request, EntityManagerInterface $entityManager, ServicebookingRepository $repo, int $id): Response
+    {
+        $servicebooking = $repo->find($id);
+
+        if (!$servicebooking) {
+            $this->addFlash('error', '⚠️ Booking not found or already deleted.');
+            return $this->redirectToRoute('app_servicebooking_index');
+        }
+
+        if ($this->isCsrfTokenValid('delete' . $servicebooking->getId(), $request->getPayload()->getString('_token'))) {
+            // 🗑️ Delete the booking
+            $entityManager->remove($servicebooking);
+            $entityManager->flush();
+
+            // 🧮 Reset AUTO_INCREMENT based on highest ID
+            $tableName = $entityManager->getClassMetadata(Servicebooking::class)->getTableName();
+            $maxId = $entityManager->getConnection()->fetchOne("SELECT MAX(id) FROM `$tableName`");
+            $nextId = $maxId ? $maxId + 1 : 1;
+
+            $entityManager->getConnection()
+                ->executeStatement("ALTER TABLE `$tableName` AUTO_INCREMENT = " . $nextId);
+
+        } else {
+            $this->addFlash('error', '⚠️ Invalid CSRF token.');
+        }
+
+        return $this->redirectToRoute('app_servicebooking_index', [], Response::HTTP_SEE_OTHER);
     }
-
-    $submittedToken = $request->request->get('_token');
-
-    if ($this->isCsrfTokenValid('delete'.$servicebooking->getId(), $submittedToken)) {
-        $entityManager->remove($servicebooking);
-        $entityManager->flush();
-    } else {
-        $this->addFlash('error', '⚠️ Invalid CSRF token.');
-    }
-
-    return $this->redirectToRoute('app_servicebooking_index', [], Response::HTTP_SEE_OTHER);
-}
-
 }

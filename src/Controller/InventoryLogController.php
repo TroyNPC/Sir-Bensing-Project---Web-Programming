@@ -17,8 +17,21 @@ final class InventoryLogController extends AbstractController
     #[Route(name: 'app_inventory_log_index', methods: ['GET'])]
     public function index(InventoryLogRepository $inventoryLogRepository): Response
     {
+        $logs = $inventoryLogRepository->findAll();
+        $logForms = [];
+
+        // Create individual forms for each inventory log (for modal editing)
+        foreach ($logs as $log) {
+            $form = $this->createForm(InventoryLogType::class, $log, [
+                'action' => $this->generateUrl('app_inventory_log_edit', ['id' => $log->getId()]),
+                'method' => 'POST',
+            ]);
+            $logForms[$log->getId()] = $form->createView();
+        }
+
         return $this->render('inventory_log/index.html.twig', [
-            'inventory_logs' => $inventoryLogRepository->findAll(),
+            'inventory_logs' => $logs,
+            'logForms' => $logForms,
         ]);
     }
 
@@ -50,23 +63,34 @@ final class InventoryLogController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_inventory_log_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, InventoryLog $inventoryLog, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(InventoryLogType::class, $inventoryLog);
-        $form->handleRequest($request);
+#[Route('/{id}/edit', name: 'app_inventory_log_edit', methods: ['POST'])]
+public function edit(Request $request, InventoryLog $inventoryLog, EntityManagerInterface $entityManager): Response
+{
+    $form = $this->createForm(InventoryLogType::class, $inventoryLog);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Get related product
+        $product = $inventoryLog->getProductname(); // Relation from InventoryLog → Pcproducts
+
+        if ($product) {
+            $stock = $inventoryLog->getStock();
+
+            // ✅ Update Pcproducts availability based on stock
+            $product->setIsavailable($stock > 0);
+
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_inventory_log_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('inventory_log/edit.html.twig', [
-            'inventory_log' => $inventoryLog,
-            'form' => $form,
-        ]);
+        return $this->redirectToRoute('app_inventory_log_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    return $this->render('inventory_log/edit.html.twig', [
+        'inventory_log' => $inventoryLog,
+        'form' => $form,
+    ]);
+}
+
 
     #[Route('/{id}', name: 'app_inventory_log_delete', methods: ['POST'])]
     public function delete(Request $request, InventoryLog $inventoryLog, EntityManagerInterface $entityManager): Response

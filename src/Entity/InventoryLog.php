@@ -22,9 +22,20 @@ class InventoryLog
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+    
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $actionType = null;
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+        return $this;
+    }
 
     public function getId(): ?int
     {
@@ -67,15 +78,4 @@ class InventoryLog
         return $this;
     }
 
-    public function getActionType(): ?string
-    {
-        return $this->actionType;
-    }
-
-    public function setActionType(string $actionType): static
-    {
-        $this->actionType = $actionType;
-
-        return $this;
-    }
 }

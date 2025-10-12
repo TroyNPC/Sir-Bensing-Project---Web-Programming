@@ -1,39 +1,235 @@
-{% extends 'base.html.twig' %}
+{% extends 'adminlayout.html.twig' %}
 
-{% block title %}InventoryLog index{% endblock %}
+{% block title %}Inventory Logs{% endblock %}
 
-{% block body %}
-    <h1>InventoryLog index</h1>
+{% block content %}
+<div class="container-fluid py-5">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Stock</th>
-                <th>CreatedAt</th>
-                <th>ActionType</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for inventory_log in inventory_logs %}
-            <tr>
-                <td>{{ inventory_log.id }}</td>
-                <td>{{ inventory_log.stock }}</td>
-                <td>{{ inventory_log.createdAt ? inventory_log.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ inventory_log.actionType }}</td>
-                <td>
-                    <a href="{{ path('app_inventory_log_show', {'id': inventory_log.id}) }}">show</a>
-                    <a href="{{ path('app_inventory_log_edit', {'id': inventory_log.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">📦 Inventory Logs</h3>
+    </div>
 
-    <a href="{{ path('app_inventory_log_new') }}">Create new</a>
+    <!-- Inventory Table -->
+    <div class="card border-0 shadow-sm rounded-4 mx-1">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="inventoryTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:700px;">
+                    <thead style="background-color:#F88F6A; color:white;">
+                        <tr class="text-center">
+                            <th class="fw-bold">ID</th>
+                            <th class="fw-bold">Product</th>
+                            <th class="fw-bold">Photo</th>
+                            <th class="fw-bold">Stock</th>
+                            <th class="fw-bold">Created At</th>
+                            <th class="fw-bold">Availability</th>
+                            <th class="fw-bold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if inventory_logs|length > 0 %}
+                        {% for log in inventory_logs %}
+                        <tr class="text-center">
+                            <td>{{ log.id }}</td>
+                            <td>{{ log.productname.name ?? 'Deleted Product' }}</td>
+                            <td>
+                                {% if log.productname and log.productname.image %}
+                                    <img src="{{ asset('uploads/products/' ~ log.productname.image) }}"
+                                         alt="{{ log.productname.name }}"
+                                         class="rounded border"
+                                         style="height:45px; width:45px; object-fit:contain; background-color:#f8f8f8; cursor:pointer;"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#showInventoryModal{{ log.id }}">
+                                {% else %}
+                                    <span class="text-muted small">No Image</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.stock }}</td>
+                            <td>{{ log.createdAt ? log.createdAt|date('Y-m-d H:i') : '' }}</td>
+                            <td>
+                            {% if log.productname and log.productname.isavailable %}
+                                <span class="badge bg-success rounded-pill px-3 py-2">Yes</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill px-3 py-2">No</span>
+                            {% endif %}
+
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <button type="button" 
+                                            class="btn btn-sm fw-semibold"
+                                            style="background-color:#F88F6A; color:white; border-radius:6px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#showInventoryModal{{ log.id }}">
+                                        Show
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm fw-semibold"
+                                            style="background-color:#2e2e2e; color:white; border-radius:6px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editInventoryModal{{ log.id }}">
+                                        Edit
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- SHOW MODAL -->
+                        <div class="modal fade" id="showInventoryModal{{ log.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content border-0 rounded-4 shadow-lg">
+                                    <div class="modal-header" style="background-color:#F88F6A; color:white;">
+                                        <h5 class="modal-title fw-semibold">Inventory Log #{{ log.id }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <div class="row align-items-start">
+                                            <div class="col-md-5 text-center mb-3 mb-md-0">
+                                                {% if log.productname and log.productname.image %}
+                                                    <img src="{{ asset('uploads/products/' ~ log.productname.image) }}"
+                                                         alt="{{ log.productname.name }}"
+                                                         class="img-fluid rounded shadow-sm"
+                                                         style="max-height:280px; object-fit:contain; background-color:#f9f9f9; padding:10px;">
+                                                {% else %}
+                                                    <div class="border rounded py-5 text-muted bg-light">No Image</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-7">
+                                                <ul class="list-unstyled small mb-3">
+                                                    <li class="mb-2"><strong class="text-secondary">Product:</strong> {{ log.productname.name ?? 'Deleted Product' }}</li>
+                                                    <li class="mb-2"><strong class="text-secondary">Stock:</strong> {{ log.stock }}</li>
+                                                    <li class="mb-2"><strong class="text-secondary">Created At:</strong> {{ log.createdAt ? log.createdAt|date('Y-m-d H:i') : '' }}</li>
+                                                    <li class="mb-2"><strong class="text-secondary">Availability:</strong>
+                                                            {% if log.productname and log.productname.isavailable %}
+                                                                <span class="badge bg-success rounded-pill px-3 py-2">Yes</span>
+                                                            {% else %}
+                                                                <span class="badge bg-danger rounded-pill px-3 py-2">No</span>
+                                                            {% endif %}
+
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- EDIT MODAL -->
+                        <div class="modal fade" id="editInventoryModal{{ log.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4 shadow-lg">
+                                    <div class="modal-header" style="background-color:#2e2e2e; color:white;">
+                                        <h5 class="modal-title">Edit Stock #{{ log.id }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        {{ form_start(logForms[log.id]) }}
+                                        
+                                        <!-- Read-only Product Info -->
+                                        <div class="mb-3 row">
+                                            <label class="col-sm-3 col-form-label fw-semibold text-secondary">Product Name:</label>
+                                            <div class="col-sm-9">
+                                                <p class="form-control-plaintext">{{ log.productname.name ?? 'Deleted Product' }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3 row">
+                                            <label class="col-sm-3 col-form-label fw-semibold text-secondary">Created At:</label>
+                                            <div class="col-sm-9">
+                                                <p class="form-control-plaintext">{{ log.createdAt ? log.createdAt|date('Y-m-d H:i') : '' }}</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Stock Input -->
+                                        <div class="mb-3 row align-items-center">
+                                            <label class="col-sm-3 col-form-label fw-semibold" for="stockInput{{ log.id }}">Stock</label>
+                                            <div class="col-sm-9">
+                                                {{ form_widget(logForms[log.id].stock, {
+                                                    'attr': {
+                                                        'class':'form-control stock-input shadow-sm',
+                                                        'type':'number',
+                                                        'min': 0,
+                                                        'step': 1,
+                                                        'oninput': "this.value = Math.max(0, this.value)"
+                                                    }
+                                                }) }}
+                                                {{ form_errors(logForms[log.id].stock) }}
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-success">Update Stock</button>
+                                        {{ form_end(logForms[log.id]) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No inventory logs found</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card { background-color: #fff; overflow: hidden; }
+.table-hover tbody tr:hover { background-color: #f8f9fa; }
+.badge { font-weight: 500; }
+#inventoryTable th, #inventoryTable td { white-space: nowrap; vertical-align: middle; }
+
+/* Stock input styling */
+.stock-input {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid #ced4da;
+}
+
+.stock-input:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    outline: none;
+}
+
+.stock-input:hover {
+    border-color: #6c757d;
+}
+</style>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Initialize DataTable
+    if (!$.fn.DataTable.isDataTable('#inventoryTable')) {
+        $('#inventoryTable').DataTable({
+            responsive: false,
+            paging: true,
+            pageLength: 10,
+            lengthChange: false,
+            searching: true,
+            order: [[0, 'asc']],
+            columnDefs: [{ targets: '_all', className: 'text-center' }],
+            language: {
+                searchPlaceholder: "Search...",
+                search: "_INPUT_",
+                zeroRecords: "No matching logs found",
+                infoEmpty: "No logs available",
+                info: "Showing _START_ to _END_ of _TOTAL_ logs",
+                paginate: { previous: "Prev", next: "Next" }
+            },
+            autoWidth: false,
+            scrollX: true,
+        });
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}

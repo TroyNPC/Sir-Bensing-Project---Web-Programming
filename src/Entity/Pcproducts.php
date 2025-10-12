@@ -57,8 +57,9 @@ class Pcproducts
     /**
      * @var Collection<int, InventoryLog>
      */
-    #[ORM\OneToMany(targetEntity: InventoryLog::class, mappedBy: 'productname')]
+    #[ORM\OneToMany(targetEntity: InventoryLog::class, mappedBy: 'productname', orphanRemoval: true)]
     private Collection $inventorylogs;
+
 
     public function __construct()
     {
