@@ -112,41 +112,42 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
 #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
 public function edit(Request $request, User $user, EntityManagerInterface $entityManager): Response
 {
-    // Tell the form it's an edit, so password is optional
+    // 🟡 Store the current password before handling the form
+    $currentPassword = $user->getPassword();
+
+    // 🟢 Create form with edit flag (password optional)
     $form = $this->createForm(UserType::class, $user, [
         'is_admin' => true,
-        'is_edit' => true, // <-- important for password optional
+        'is_edit' => true,
     ]);
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        // Update password only if the user typed a new one
-        $password = $form->get('password')->getData();
-        if ($password) {
-            $user->setPassword($password);
-        }
 
-        // Handle roles if present
-        if ($form->has('roles')) {
-            $roles = $form->get('roles')->getData(); // returns 'ROLE_ADMIN' or 'ROLE_CUSTOMER'
-            if ($roles) {
-                $user->setRoles($roles);
-            }
+        // ✅ Handle roles (same logic as addAdmin)
+        $roles = $form->get('roles')->getData() ?: 'ROLE_CUSTOMER';
+        $user->setRoles($roles);
+
+        // ✅ Handle password
+        $newPassword = $form->get('password')->getData();
+        if (!empty($newPassword)) {
+            $user->setPassword($newPassword);
+        } else {
+            // Keep old password if no new one provided
+            $user->setPassword($currentPassword);
         }
 
         $entityManager->flush();
 
         $this->addFlash('success', 'User updated successfully.');
-
-        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_user_index');
     }
 
     return $this->render('user/edit.html.twig', [
         'user' => $user,
-        'form' => $form,
+        'form' => $form->createView(),
     ]);
 }
-
 
 
 

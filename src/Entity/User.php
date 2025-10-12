@@ -20,6 +20,7 @@ class User
     private ?string $email = null;
 
     #[ORM\Column(length: 100)]
+     #[Assert\NotBlank(message: 'Password is required.')]
     private ?string $password = null;
 
     // Single role stored as string, matches your database column

@@ -39,8 +39,8 @@ class UserType extends AbstractType
                 ],
             ])
             ->add('password', PasswordType::class, [
-                'mapped' => true,
-                'label' => 'Password',
+                'mapped' => false,
+                'label' => 'Password',  
                 'required' => !$isEdit,           // required on create, optional on edit
                 'constraints' => !$isEdit ? [      // only validate NotBlank on create
                     new Assert\NotBlank(['message' => 'Password cannot be blank.']),
