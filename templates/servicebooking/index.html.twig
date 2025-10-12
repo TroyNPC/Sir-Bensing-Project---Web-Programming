@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (hasData && !$.fn.DataTable.isDataTable('#servicebookingTable')) {
         $table.DataTable({
             responsive: false,
-            scrollX: true,
+            scrollX: false,
             paging: true,
             pageLength: 10,
             lengthChange: false,
@@ -151,7 +151,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 paginate: { previous: "Prev", next: "Next" }
             },
             autoWidth: false,
-            scrollX: true,
         });
     }
 

@@ -23,7 +23,7 @@ final class UserController extends AbstractController
         ]);
     }
 
-  #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
+#[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
 public function new(Request $request, EntityManagerInterface $entityManager): Response
 {
     $user = new User();
@@ -31,11 +31,16 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        // Set default role
+        // Set default role (as array)
         $user->setRoles('ROLE_CUSTOMER');
 
-        // Store password (plain text for now; hash in production)
-        $user->setPassword($user->getPassword());
+        // Get the password from the form
+        $plainPassword = $form->get('password')->getData();
+
+        if ($plainPassword !== null) {
+            // Store password (plain text for now; hash in production)
+            $user->setPassword($plainPassword);
+        }
 
         // 🟢 Reset AUTO_INCREMENT if table is empty
         $count = $entityManager->getRepository(User::class)->count([]);
@@ -67,6 +72,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
     ]);
 }
 
+    
     // Admin add user page
     #[Route('/addaccountadmin', name: 'app_user_add_admin', methods: ['GET', 'POST'])]
     public function addAdmin(Request $request, EntityManagerInterface $entityManager): Response
