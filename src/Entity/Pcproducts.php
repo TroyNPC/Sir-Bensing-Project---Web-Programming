@@ -55,17 +55,16 @@ class Pcproducts
     private ?string $image = null;
 
     /**
-     * @var Collection<int, InventoryLog>
+     * @var Collection<int, Stocks>
      */
-    #[ORM\OneToMany(targetEntity: InventoryLog::class, mappedBy: 'productname', orphanRemoval: true)]
-    private Collection $inventorylogs;
+    #[ORM\OneToMany(targetEntity: Stocks::class, mappedBy: 'productname', orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $stocks;
 
 
     public function __construct()
     {
-        $this->inventorylogs = new ArrayCollection();
+        $this->stocks = new ArrayCollection();
     }
-
 
     // ----------------- GETTERS & SETTERS -----------------
     public function getId(): ?int
@@ -180,29 +179,29 @@ class Pcproducts
     }
 
     /**
-     * @return Collection<int, InventoryLog>
+     * @return Collection<int, Stocks>
      */
-    public function getInventorylogs(): Collection
+    public function getStocks(): Collection
     {
-        return $this->inventorylogs;
+        return $this->stocks;
     }
 
-    public function addInventorylog(InventoryLog $inventorylog): static
+    public function addStock(Stocks $stock): static
     {
-        if (!$this->inventorylogs->contains($inventorylog)) {
-            $this->inventorylogs->add($inventorylog);
-            $inventorylog->setProductname($this);
+        if (!$this->stocks->contains($stock)) {
+            $this->stocks->add($stock);
+            $stock->setProductname($this);
         }
 
         return $this;
     }
 
-    public function removeInventorylog(InventoryLog $inventorylog): static
+    public function removeStock(Stocks $stock): static
     {
-        if ($this->inventorylogs->removeElement($inventorylog)) {
+        if ($this->stocks->removeElement($stock)) {
             // set the owning side to null (unless already changed)
-            if ($inventorylog->getProductname() === $this) {
-                $inventorylog->setProductname(null);
+            if ($stock->getProductname() === $this) {
+                $stock->setProductname(null);
             }
         }
 

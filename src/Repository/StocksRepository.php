@@ -2,22 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\InventoryLog;
+use App\Entity\Stocks;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<InventoryLog>
+ * @extends ServiceEntityRepository<Stocks>
  */
-class InventoryLogRepository extends ServiceEntityRepository
+class StocksRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, InventoryLog::class);
+        parent::__construct($registry, Stocks::class);
     }
 
 //    /**
-//     * @return InventoryLog[] Returns an array of InventoryLog objects
+//     * @return Stocks[] Returns an array of Stocks objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -31,7 +31,7 @@ class InventoryLogRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?InventoryLog
+//    public function findOneBySomeField($value): ?Stocks
 //    {
 //        return $this->createQueryBuilder('i')
 //            ->andWhere('i.exampleField = :val')
