@@ -67,7 +67,7 @@
 
                             <td class="text-center">{{ pcproduct.brand }}</td>
 
-                            <td class="text-center">${{ pcproduct.price|number_format(2, '.', ',') }}</td>
+                            <td class="text-center">₱{{ pcproduct.price|number_format(2, '.', ',') }}</td>
 
                             <td class="text-center">{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d') : '' }}</td>
                             <td class="text-center">{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d') : '' }}</td>
@@ -137,7 +137,7 @@
                 <li class="mb-2"><strong class="text-secondary">Brand:</strong> <span class="fw-semibold">{{ pcproduct.brand }}</span></li>
                 <li class="mb-2"><strong class="text-secondary">Category:</strong> <span class="fw-semibold">{{ pcproduct.category }}</span></li>
                 <li class="mb-2"><strong class="text-secondary">Price:</strong> 
-                  <span class="fw-semibold text-success">${{ pcproduct.price|number_format(2, '.', ',') }}</span>
+                  <span class="fw-semibold text-success">₱{{ pcproduct.price|number_format(2, '.', ',') }}</span>
                 </li>
                 <li class="mb-2"><strong class="text-secondary">Available:</strong>
                   {% if pcproduct.isavailable %}

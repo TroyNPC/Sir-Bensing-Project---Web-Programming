@@ -156,13 +156,9 @@
           <li class="nav-item">
             <a id="nav-about" class="nav-link fs-6 {% if 'about' in app.request.get('_route') %}active{% endif %}" href="{{ path('app_about')}}">About</a>
           </li>
-        <li class="nav-item">
-          <a id="nav-inventory" 
-            class="nav-link fs-6 {% if 'inventory_log' in app.request.get('_route') %}active{% endif %}" 
-            href="{{ path('app_inventory_log_index') }}">
-            Inventory
-          </a>
-        </li>
+          <li class="nav-item">
+            <a id="nav-contact" class="nav-link fs-6 {% if 'contact' in app.request.get('_route') %}active{% endif %}" href="{{ path('app_contact')}}">Contact</a>
+          </li>
 
         </ul>
 

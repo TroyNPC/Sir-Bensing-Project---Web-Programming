@@ -15,14 +15,42 @@
     {% endblock %}
 
     {% block javascripts %}
+
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    const modalBody = document.getElementById('flashModalBody');
+                    if (modalBody) {
+                        modalBody.textContent = "{{ message|e('js') }}";
+                        const flashModal = new bootstrap.Modal(document.getElementById('flashModal'));
+                        flashModal.show();
+                    }
+                {% endfor %}
+            {% endfor %}
+        });
+    </script>
       {{ encore_entry_script_tags('app') }}
     {% endblock %}
   </head>
 
   <body style="overflow:auto">
+  <div class="modal fade" id="flashModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Success</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="flashModalBody">
+        <!-- Message will be injected here -->
+      </div>
+    </div>
+  </div>
+</div>
     {% block body %}{% endblock %}
     <script src="{{ asset('build/app.js') }}"></script>
-
+    
     <script src= "{{ asset('js/bootstrap.bundle.min.js') }}"></script>
   </body>
 </html>

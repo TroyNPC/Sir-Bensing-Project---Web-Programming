@@ -170,7 +170,7 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
             $entityManager->getConnection()
                 ->executeStatement('ALTER TABLE user AUTO_INCREMENT = ' . $nextId);
         }
-
+        $this->addFlash('success', 'User deleted successfully.');
         return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
     }
 }

@@ -282,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ---------- EDIT USER MODALS (lazy load per row) ----------
+    // ---------- EDIT USER MODALS ----------
     document.querySelectorAll('[id^=\"editUserModal\"]').forEach(modal => {
         modal.addEventListener('show.bs.modal', function (event) {
             const id = this.id.replace('editUserModal', '');
@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    // 🎯 Exact regex patterns and messages from UserType.php
+    //  Exact regex patterns and messages from UserType.php
     const validationRules = {
         fullname: {
             regex: /^[a-zA-Z\s]+$/,
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // 🔍 Attach validation to any input matching Symfony form names
+    // Attach validation to any input matching Symfony form names
     const attachValidation = (input, rule) => {
         const errorBox = document.createElement('div');
         errorBox.classList.add('live-validation', 'mt-1');
@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
-    // 🧠 Observer for dynamically loaded forms (Add/Edit user modals)
+    // Observer for dynamically loaded forms (Add/Edit user modals)
     const observer = new MutationObserver(() => {
         const inputs = document.querySelectorAll('form input');
         inputs.forEach(input => {
@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // 🚀 Initialize immediately if form is already on the page
+    // Initialize immediately if form is already on the page
     document.querySelectorAll('form input').forEach(input => {
         const name = input.name.toLowerCase();
         if (validationRules[name] && !input.dataset.validated) {

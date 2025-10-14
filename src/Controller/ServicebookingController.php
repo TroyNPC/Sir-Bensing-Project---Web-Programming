@@ -110,6 +110,8 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
             $entityManager->getConnection()
                 ->executeStatement("ALTER TABLE `$tableName` AUTO_INCREMENT = " . $nextId);
 
+            $this->addFlash('success', 'Service deleted successfully.');    
+
         } else {
             $this->addFlash('error', '⚠️ Invalid CSRF token.');
         }

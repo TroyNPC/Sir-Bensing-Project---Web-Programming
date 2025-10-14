@@ -13,48 +13,48 @@
         <div class="card-body p-4">
           <h2 class="fw-bold text-center mb-4">Create Your Account</h2>
 
-          {# Start the form #}
-          {{ form_start(form) }}
+          {# This isssssssss for Start the form #}
+          {{ form_start(form, {'attr': {'autocomplete': 'off'}}) }}
 
-          {# Full Name #}
+          {# This isssssssss for Full Name #}
           <div class="mb-3">
             {{ form_label(form.fullname, 'Full Name', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
             {{ form_widget(form.fullname, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your full name'} }) }}
             {{ form_errors(form.fullname) }}
           </div>
 
-          {# Email #}
+          {# This isssssssss for Email #}
           <div class="mb-3">
             {{ form_label(form.email, 'Email', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
             {{ form_widget(form.email, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your email address'} }) }}
             {{ form_errors(form.email) }}
           </div>
 
-          {# Password #}
+          {# This isssssssss for Password #}
           <div class="mb-3">
             {{ form_label(form.password, 'Password', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
             {{ form_widget(form.password, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your password', 'autocomplete': 'new-password'} }) }}
             {{ form_errors(form.password) }}
           </div>
 
-          {# Phone Number #}
+          {# This isssssssss for Phone Number #}
           <div class="mb-3">
             {{ form_label(form.phoneNumber, 'Phone Number', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
             {{ form_widget(form.phoneNumber, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your phone number'} }) }}
             {{ form_errors(form.phoneNumber) }}
           </div>
 
-          {# Address #}
+          {# This isssssssss for Address #}
           <div class="mb-3">
             {{ form_label(form.address, 'Address', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
             {{ form_widget(form.address, { 'attr': {'class': 'form-control', 'placeholder': 'Enter your full address'} }) }}
             {{ form_errors(form.address) }}
           </div>
 
-          {# CSRF token (hidden) #}
+          {# This isssssssss for CSRF token (hidden) #}
           {{ form_row(form._token) }}
 
-          {# Submit button #}
+          {# This isssssssss for Submit button #}
           <button type="submit" class="btn btn-orange w-100 mt-3">Register</button>
 
           {{ form_end(form) }}
