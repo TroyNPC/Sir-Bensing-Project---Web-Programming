@@ -25,7 +25,7 @@
     <div class="card border-0 shadow-sm rounded-4 mx-1">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="pcproductsTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1300px;">
+                <table id="pcproductsTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1100px;">
                     <thead style="background-color:#F88F6A; color:white;">
                         <tr class="text-center">
                             <th class="fw-bold">ID</th>
@@ -248,235 +248,18 @@ background: #f9f9f9 url("{{ asset('images/placeholder-image.png') }}") center/60
 </style>
 
 {% block javascripts %}
-{{ parent() }}
-<script>
-/*
-  PC Products modal helpers
-  - Prevents duplicate script initialization
-  - Ensures file preview works immediately after injecting form
-  - Prevents multiple form submissions (safe with validation)
-*/
-
-if (!window.pcProductsScriptInit) {
-    window.pcProductsScriptInit = true;
-    console.log("✅ PC Products script initialized");
-} else {
-    console.log("⚠️ PC Products script already initialized - skipping re-init");
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    // DataTable init (keeps your original settings)
-    $.fn.dataTable.ext.errMode = 'none';
-    const $table = $('#pcproductsTable');
-    const rowCount = $table.find('tbody tr').length;
-    const hasData = rowCount > 0 && !$table.find('tbody tr td').first().text().includes('No records');
-
-    if (hasData && !$.fn.DataTable.isDataTable('#pcproductsTable')) {
-        $('#pcproductsTable').DataTable({
-            responsive: false,
-            paging: true,
-            pageLength: 10,
-            lengthChange: false,
-            searching: true,
-            order: [[0, 'asc']],
-            columnDefs: [{ targets: '_all', className: 'text-center' }],
-            language: {
-                searchPlaceholder: "Search...",
-                search: "_INPUT_",
-                zeroRecords: "No matching products found",
-                infoEmpty: "No products available",
-                info: "Showing _START_ to _END_ of _TOTAL_ products",
-                paginate: { previous: "Prev", next: "Next" }
-            },
-            autoWidth: false,
-            scrollX: false,
+    {{ parent() }}
+    {{ encore_entry_script_tags('pcproducts') }}
+    <script>
+        // Pass dynamic URLs to JS using data attributes
+        document.addEventListener('DOMContentLoaded', function () {
+            const addModalBody = document.getElementById('addProductModalBody');
+            if (addModalBody) {
+                addModalBody.dataset.newUrl = "{{ absolute_url(path('app_pcproducts_new')) }}";
+                addModalBody.dataset.newAction = "{{ path('app_pcproducts_new') }}";
+            }
         });
-    }
-
-    // -------------------------
-    // Helpers
-    // -------------------------
-    function setupImagePreview(form) {
-        // find file input
-        let fileInput = form.querySelector('input[type="file"]');
-        if (!fileInput) return;
-
-        // ensure we have a fresh file input node (prevent duplicate listeners in edge cases)
-        // replace with clone to remove any stray listeners that were accidentally attached earlier
-        const fresh = fileInput.cloneNode(true);
-        fileInput.parentNode.replaceChild(fresh, fileInput);
-        fileInput = fresh;
-        fileInput.setAttribute('accept', 'image/*');
-
-        // find or create preview element
-        let preview = form.querySelector('.preview-img');
-        if (!preview) {
-            preview = document.createElement('img');
-            preview.classList.add('preview-img', 'empty');
-            fileInput.parentNode.insertBefore(preview, fileInput);
-        }
-
-        // create or reuse error node
-        let error = form.querySelector('.file-error');
-        if (!error) {
-            error = document.createElement('div');
-            error.classList.add('file-error');
-            fileInput.parentNode.insertBefore(error, fileInput.nextSibling);
-        }
-
-        // if a file is already selected (rare), show it
-        if (fileInput.files && fileInput.files.length > 0) {
-            const f = fileInput.files[0];
-            if (f && f.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = evt => {
-                    preview.src = evt.target.result;
-                    preview.classList.remove('empty');
-                };
-                reader.readAsDataURL(f);
-            }
-        }
-
-        // attach change listener
-        fileInput.addEventListener('change', e => {
-            const file = e.target.files && e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = evt => {
-                    preview.src = evt.target.result;
-                    preview.classList.remove('empty');
-                };
-                reader.readAsDataURL(file);
-                error.textContent = '';
-            } else {
-                preview.src = '';
-                preview.classList.add('empty');
-                error.textContent = '❌ Please select a valid image file (JPG, PNG, GIF, or WEBP).';
-                e.target.value = '';
-            }
-        }, { passive: true });
-    }
-
-    // Prevent multiple submissions but allow re-enable if validation fails.
-    function attachSafeSubmit(form) {
-        if (!form || form.dataset.safeSubmitAttached === "true") return;
-        form.dataset.safeSubmitAttached = "true";
-
-        form.addEventListener('submit', function (e) {
-            // Let HTML5 validation run first. If invalid, stop and show validation UI.
-            if (!form.checkValidity()) {
-                // block submission when invalid
-                e.preventDefault();
-                e.stopPropagation();
-                form.classList.add('was-validated'); // bootstrap visual
-                // keep submit enabled so user can fix and resubmit
-                return;
-            }
-
-            // Valid: disable submit button immediately to prevent double submits
-            const btn = form.querySelector('button[type="submit"]');
-            if (btn) {
-                btn.disabled = true;
-                // save original content to dataset to possibly restore later
-                if (!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
-            }
-
-            // Let the form submit normally (no preventDefault)
-            // If you later handle submission via AJAX, you'll need different logic to re-enable on failure.
-        }, { passive: false });
-    }
-
-    // Utility to inject a fetched form into modalBody with a gentle fade and safe handlers
-    async function loadFormIntoModal(modalBody, url, formActionPath) {
-        try {
-            // clear previous content (so form and old listeners removed)
-            modalBody.innerHTML = '';
-
-            const res = await fetch(url, { credentials: 'same-origin' });
-            const html = await res.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const form = doc.querySelector('form');
-
-            if (!form) {
-                modalBody.innerHTML = '<p class="text-danger">Could not load form.</p>';
-                return null;
-            }
-
-            // set correct action if provided
-            if (formActionPath) form.action = formActionPath;
-
-            // Insert with fade to avoid flicker
-            modalBody.style.transition = 'opacity 0.18s ease';
-            modalBody.style.opacity = '0';
-            // small timeout to allow transition to apply
-            setTimeout(() => {
-                modalBody.innerHTML = '';
-                modalBody.appendChild(form);
-
-                // ensure DOM painted before attaching preview (fixes "need to click twice" issue)
-                requestAnimationFrame(() => {
-                    modalBody.style.opacity = '1';
-                    setupImagePreview(form);
-                    attachSafeSubmit(form);
-                });
-            }, 120);
-
-            return form;
-        } catch (err) {
-            modalBody.innerHTML = '<p class="text-danger">Failed to load form.</p>';
-            console.error('Failed to load form:', err);
-            return null;
-        }
-    }
-
-    // -------------------------
-    // EDIT MODALS - attach once per modal element
-    // -------------------------
-    document.querySelectorAll('[id^="editModal"]').forEach(modal => {
-        if (modal.dataset.listenerAdded === 'true') return;
-        modal.dataset.listenerAdded = 'true';
-
-        modal.addEventListener('show.bs.modal', function (event) {
-            const id = this.id.replace('editModal', '');
-            const modalBody = document.getElementById('editModalBody' + id);
-            if (!modalBody) return;
-
-            // fetch edit form URL (absolute path not strictly required but consistent)
-            const url = `/pcproducts/${id}/edit`;
-            const actionPath = `/pcproducts/${id}/edit`;
-
-            // load form (this will clear previous content and attach preview/submit safety)
-            loadFormIntoModal(modalBody, url, actionPath);
-        });
-    });
-
-    // -------------------------
-    // ADD MODAL - attach once
-    // -------------------------
-    const addProductModal = document.getElementById('addProductModal');
-    if (addProductModal && addProductModal.dataset.listenerAdded !== 'true') {
-        addProductModal.dataset.listenerAdded = 'true';
-
-        addProductModal.addEventListener('show.bs.modal', function () {
-            const modalBody = document.getElementById('addProductModalBody');
-            if (!modalBody) return;
-
-            // If already loaded in this page session, do not refetch (prevents repeated fetch/flicker)
-            // If you want to always reload on open, remove this guard.
-            if (modalBody.dataset.loaded === 'true') return;
-
-            const url = "{{ absolute_url(path('app_pcproducts_new')) }}";
-            const actionPath = "{{ path('app_pcproducts_new') }}";
-            loadFormIntoModal(modalBody, url, actionPath).then(form => {
-                if (form) modalBody.dataset.loaded = 'true';
-            });
-        });
-    }
-
-});
-</script>
+    </script>
 {% endblock %}
 
 
