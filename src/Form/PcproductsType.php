@@ -3,13 +3,13 @@
 namespace App\Form;
 
 use App\Entity\Pcproducts;
-use App\Entity\InventoryLog;
+use App\Entity\Stocks;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 
@@ -30,14 +30,14 @@ class PcproductsType extends AbstractType
         $disabledAvailability = false;
 
         if ($product && $product->getId()) {
-            // Get the latest InventoryLog for this product
-            $latestLog = $this->em->getRepository(InventoryLog::class)
+            // Get the latest Stocks entry for this product
+            $latestStock = $this->em->getRepository(Stocks::class)
                 ->findOneBy(
                     ['productname' => $product],
                     ['createdAt' => 'DESC']
                 );
 
-            if ($latestLog && $latestLog->getStock() <= 0) {
+            if ($latestStock && $latestStock->getStock() <= 0) {
                 $disabledAvailability = true;
             }
         }
@@ -75,12 +75,11 @@ class PcproductsType extends AbstractType
             ->add('isavailable', null, [
                 'disabled' => $disabledAvailability,
             ])
-            ->add('createdat', null, [
+            ->add('createdat', DateTimeType::class, [
                 'disabled' => true,
-                'data' => new \DateTimeImmutable(),
                 'widget' => 'single_text',
             ])
-            ->add('updatedat', null, [
+            ->add('updatedat', DateTimeType::class, [
                 'widget' => 'single_text',
             ]);
     }

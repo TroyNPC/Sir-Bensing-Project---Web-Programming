@@ -4,41 +4,10 @@
 
 {% block body %}
 
-<style>
-  .contact-section {
-    padding: 60px 0;
-    background: #f5f5f5;
-  }
-  .contact-card {
-    background: #fff;
-    border-radius: 15px;
-    padding: 2rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: 0.3s ease;
-  }
-  .contact-card:hover {
-    transform: translateY(-5px);
-  }
-  .form-control, .form-select {
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 0.95rem;
-  }
-  .btn-orange {
-    background: #F88F6A;
-    color: #fff;
-    transition: 0.3s;
-  }
-  .btn-orange:hover {
-    background: #e47654;
-    color: #fff;
-  }
-  .contact-info i {
-    color: #F88F6A;
-    font-size: 1.2rem;
-    margin-right: 10px;
-  }
-</style>
+  {# Child templates can inject their own CSS here #}
+{% block feature_stylesheets %}
+<link rel="stylesheet" href="{{ asset('Arrangestyle/projects/customercontact.css') }}">
+{% endblock %}
 
 <!-- Contact Section -->
 <section class="contact-section">

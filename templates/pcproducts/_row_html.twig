@@ -1,0 +1,36 @@
+<tr id="row-{{ pcproduct.id }}">
+    <td class="text-center">{{ pcproduct.id }}</td>
+    <td class="text-center">
+        {% if pcproduct.image %}
+            <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}" alt="{{ pcproduct.name }}"
+                 class="rounded border product-thumb" style="height:45px; width:45px; object-fit:contain;">
+        {% else %}
+            <span class="text-muted small">No Image</span>
+        {% endif %}
+    </td>
+    <td class="text-center fw-semibold">{{ pcproduct.name }}</td>
+    <td class="text-center">
+        <span class="badge rounded-pill text-white" style="background-color:#F88F6A;">{{ pcproduct.category }}</span>
+    </td>
+    <td class="text-center">{{ pcproduct.brand }}</td>
+    <td class="text-center">₱{{ pcproduct.price|number_format(2, '.', ',') }}</td>
+    <td class="text-center">{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d') : '' }}</td>
+    <td class="text-center">{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d') : '' }}</td>
+    <td class="text-center">
+        {% if pcproduct.isavailable %}
+            <span class="badge bg-success rounded-pill px-3 py-2">Yes</span>
+        {% else %}
+            <span class="badge bg-danger rounded-pill px-3 py-2">No</span>
+        {% endif %}
+    </td>
+    <td class="text-center">
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <button type="button" class="btn btn-sm fw-semibold btn-show" data-id="{{ pcproduct.id }}" style="background-color:#F88F6A; color:white; border-radius:6px;">Show</button>
+            <button type="button" class="btn btn-sm fw-semibold btn-edit" data-id="{{ pcproduct.id }}" style="background-color:#2e2e2e; color:white; border-radius:6px;">Edit</button>
+            <form method="post" class="d-inline-block btn-delete" data-id="{{ pcproduct.id }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ pcproduct.id) }}">
+                <button type="submit" class="btn btn-sm fw-semibold btn-danger rounded-1">Delete</button>
+            </form>
+        </div>
+    </td>
+</tr>

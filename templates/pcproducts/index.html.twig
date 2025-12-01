@@ -2,6 +2,10 @@
 
 {% block title %}PC Products Index{% endblock %}
 
+{% block feature_stylesheets %}
+<link rel="stylesheet" href="/Arrangestyle/pcproducts/adminpcproduct.css">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-5">
 
@@ -10,36 +14,37 @@
         <h3 class="fw-bold mb-0" style="color:#2e2e2e;">🖥️ PC Product List</h3>
 
         <div>
-            <button
-                type="button"
-                class="btn btn-sm px-4 py-2 shadow-sm fw-semibold"
-                style="background-color:#F88F6A; color:white; border-radius:8px;"
-                data-bs-toggle="modal"
-                data-bs-target="#addProductModal">
+            <!-- ✅ Add now goes to NEW PAGE -->
+            <a href="{{ path('app_pcproducts_new') }}"
+               class="btn btn-sm px-4 py-2 shadow-sm fw-semibold"
+               style="background-color:#F88F6A; color:white; border-radius:8px;">
                 <i class="bi bi-plus-circle me-1"></i> Add New Product
-            </button>
+            </a>
         </div>
     </div>
 
     <!-- Product Table -->
     <div class="card border-0 shadow-sm rounded-4 mx-1">
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table id="pcproductsTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1100px;">
+            <div class="table-responsive div class="table-responsive table-scroll">
+                <table id="pcproductsTable"
+                       class="table table-striped table-bordered w-100"
+                       style="min-width:1100px;">
                     <thead style="background-color:#F88F6A; color:white;">
                         <tr class="text-center">
-                            <th class="fw-bold">ID</th>
-                            <th class="fw-bold">Photo</th>
-                            <th class="fw-bold">Name</th>
-                            <th class="fw-bold">Category</th>
-                            <th class="fw-bold">Brand</th>
-                            <th class="fw-bold">Price</th>
-                            <th class="fw-bold">Created At</th>
-                            <th class="fw-bold">Updated At</th>
-                            <th class="fw-bold">Available</th>
-                            <th class="fw-bold">Actions</th>
+                            <th>ID</th>
+                            <th>Photo</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Brand</th>
+                            <th>Price</th>
+                            <th>Created At</th>
+                            <th>Updated At</th>
+                            <th>Available</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {% for pcproduct in pcproducts %}
                         <tr>
@@ -49,11 +54,11 @@
                             <td class="text-center">
                                 {% if pcproduct.image %}
                                     <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}"
-                                        alt="{{ pcproduct.name }}"
-                                        class="rounded border product-thumb"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#showModal{{ pcproduct.id }}"
-                                        style="height: 45px; width: 45px; object-fit: contain; padding: 3px; background-color:#f8f8f8; cursor:pointer;">
+                                         alt="{{ pcproduct.name }}"
+                                         class="rounded border product-thumb"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#showModal{{ pcproduct.id }}"
+                                         style="height: 45px; width: 45px; object-fit: contain; padding: 3px; background-color:#f8f8f8; cursor:pointer;">
                                 {% else %}
                                     <span class="text-muted small">No Image</span>
                                 {% endif %}
@@ -62,15 +67,18 @@
                             <td class="text-center fw-semibold">{{ pcproduct.name }}</td>
 
                             <td class="text-center">
-                                <span class="badge rounded-pill text-white" style="background-color:#F88F6A;">{{ pcproduct.category }}</span>
+                                <span class="badge rounded-pill text-white"
+                                      style="background-color:#F88F6A;">
+                                    {{ pcproduct.category }}
+                                </span>
                             </td>
 
                             <td class="text-center">{{ pcproduct.brand }}</td>
 
                             <td class="text-center">₱{{ pcproduct.price|number_format(2, '.', ',') }}</td>
 
-                            <td class="text-center">{{ pcproduct.createdat ? pcproduct.createdat|date('Y-m-d') : '' }}</td>
-                            <td class="text-center">{{ pcproduct.updatedat ? pcproduct.updatedat|date('Y-m-d') : '' }}</td>
+                            <td class="text-center">{{ pcproduct.createdat|date('Y-m-d') }}</td>
+                            <td class="text-center">{{ pcproduct.updatedat|date('Y-m-d') }}</td>
 
                             <td class="text-center">
                                 {% if pcproduct.isavailable %}
@@ -82,6 +90,8 @@
 
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    
+                                    <!-- SHOW stays a modal -->
                                     <button type="button" 
                                             class="btn btn-sm fw-semibold"
                                             style="background-color:#F88F6A; color:white; border-radius:6px;"
@@ -90,101 +100,64 @@
                                         Show
                                     </button>
 
-                                    <button type="button"
-                                            class="btn btn-sm fw-semibold"
-                                            style="background-color:#2e2e2e; color:white; border-radius:6px;"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editModal{{ pcproduct.id }}">
-                                        Edit
-                                    </button>
+                                    <!-- EDIT now opens a page -->
+                                    <a href="{{ path('app_pcproducts_edit', {id: pcproduct.id}) }}"
+                                       class="btn btn-sm fw-semibold"
+                                       style="background-color:#2e2e2e; color:white; border-radius:6px;">
+                                       Edit
+                                    </a>
 
+                                    <!-- DELETE stays normal -->
                                     {{ include('pcproducts/_delete_form.html.twig', { pcproduct: pcproduct }) }}
                                 </div>
                             </td>
                         </tr>
-<!-- SHOW MODAL -->
-<div class="modal fade" id="showModal{{ pcproduct.id }}" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 rounded-4 shadow-lg">
-      
-      <!-- Header -->
-      <div class="modal-header" style="background-color:#F88F6A; color:white;">
-        <h5 class="modal-title fw-semibold">{{ pcproduct.name }}</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
 
-      <!-- Body -->
-      <div class="modal-body p-4">
-        <div class="row align-items-start">
-          
-          <!-- Product Image -->
-          <div class="col-md-5 text-center mb-3 mb-md-0">
-            {% if pcproduct.image %}
-              <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}"
-                   alt="{{ pcproduct.name }}"
-                   class="img-fluid rounded shadow-sm"
-                   style="max-height: 280px; object-fit: contain; background-color:#f9f9f9; padding:10px;">
-            {% else %}
-              <div class="border rounded py-5 text-muted bg-light">No Image</div>
-            {% endif %}
-          </div>
-
-          <!-- Product Info -->
-          <div class="col-md-7">
-            <div class="p-2">
-              <h5 class="fw-bold mb-3" style="color:#2e2e2e;">Product Details</h5>
-              <ul class="list-unstyled small mb-3">
-                <li class="mb-2"><strong class="text-secondary">Brand:</strong> <span class="fw-semibold">{{ pcproduct.brand }}</span></li>
-                <li class="mb-2"><strong class="text-secondary">Category:</strong> <span class="fw-semibold">{{ pcproduct.category }}</span></li>
-                <li class="mb-2"><strong class="text-secondary">Price:</strong> 
-                  <span class="fw-semibold text-success">₱{{ pcproduct.price|number_format(2, '.', ',') }}</span>
-                </li>
-                <li class="mb-2"><strong class="text-secondary">Available:</strong>
-                  {% if pcproduct.isavailable %}
-                    <span class="badge bg-success rounded-pill px-3 py-2">Yes</span>
-                  {% else %}
-                    <span class="badge bg-danger rounded-pill px-3 py-2">No</span>
-                  {% endif %}
-                </li>
-              </ul>
-              <hr>
-              <div>
-                <h6 class="fw-semibold text-secondary mb-2">Description</h6>
-                <p class="text-muted small mb-0" style="line-height:1.6;">
-                  {{ pcproduct.description ?? 'No description provided.' }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-                        <!-- EDIT MODAL -->
-                        <div class="modal fade" id="editModal{{ pcproduct.id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <!-- SHOW MODAL (kept exactly as you wanted) -->
+                        <div class="modal fade" id="showModal{{ pcproduct.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
                                 <div class="modal-content border-0 rounded-4 shadow-lg">
-                                    <div class="modal-header" style="background-color:#2e2e2e; color:white;">
-                                        <h5 class="modal-title">Edit {{ pcproduct.name }}</h5>
+                                    <div class="modal-header" style="background-color:#F88F6A; color:white;">
+                                        <h5 class="modal-title">{{ pcproduct.name }}</h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
-                                    <div class="modal-body p-4" id="editModalBody{{ pcproduct.id }}">
-                                        <div class="text-center text-muted py-3">
-                                            <div class="spinner-border text-dark" role="status"></div>
-                                            <p class="mt-2 mb-0 small">Loading form...</p>
+                                    <div class="modal-body p-4">
+                                        <div class="row">
+                                            <div class="col-md-5 text-center">
+                                                {% if pcproduct.image %}
+                                                    <img src="{{ asset('uploads/products/' ~ pcproduct.image) }}"
+                                                         class="img-fluid rounded shadow-sm"
+                                                         style="max-height: 280px; object-fit: contain;">
+                                                {% else %}
+                                                    <div class="border rounded py-5 text-muted bg-light">No Image</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-7">
+                                                <h5 class="fw-bold">Product Details</h5>
+                                                <ul class="list-unstyled small">
+                                                    <li><strong>Brand:</strong> {{ pcproduct.brand }}</li>
+                                                    <li><strong>Category:</strong> {{ pcproduct.category }}</li>
+                                                    <li><strong>Price:</strong> ₱{{ pcproduct.price|number_format(2, '.', ',') }}</li>
+                                                    <li><strong>Available:</strong>
+                                                        {% if pcproduct.isavailable %}
+                                                            <span class="badge bg-success">Yes</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">No</span>
+                                                        {% endif %}
+                                                    </li>
+                                                </ul>
+                                                <hr>
+                                                <h6>Description</h6>
+                                                <p class="text-muted small">
+                                                    {{ pcproduct.description ?? 'No description provided.' }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {% else %}
-                        <tr>
-                            <td colspan="11" class="text-center text-muted py-4">No records found</td>
-                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -192,75 +165,8 @@
         </div>
     </div>
 </div>
-
-<!-- ADD PRODUCT MODAL -->
-<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
-<div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content border-0 rounded-4 shadow-lg">
-    <div class="modal-header" style="background-color:#F88F6A; color:white;">
-        <h5 class="modal-title fw-semibold">Add New Product</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-    </div>
-    <div class="modal-body p-4" id="addProductModalBody">
-        <div class="text-center text-muted py-3">
-        <div class="spinner-border text-dark" role="status"></div>
-        <p class="mt-2 mb-0 small">Loading form...</p>
-        </div>
-    </div>
-    </div>
-</div>
-</div>
-
-<style>
-.card { background-color: #fff; overflow: hidden; }
-.table-hover tbody tr:hover { background-color: #f8f9fa; }
-.badge { font-weight: 500; }
-.product-thumb { border-radius: 6px; padding: 3px; }
-.form-check-input:checked {
-background-color: #F88F6A !important;
-border-color: #F88F6A !important;
-}
-#pcproductsTable th, #pcproductsTable td {
-    white-space: nowrap; /* prevent wrapping */
-    vertical-align: middle;
-}
-/* ✅ Add Modal Image Preview Only */
-.preview-img {
-display: block;
-width: 220px;
-height: 220px;
-object-fit: contain;
-margin: 0 auto 10px auto;
-border-radius: 8px;
-border: 2px dashed #ddd;
-background-color: #f9f9f9;
-padding: 5px;
-}
-.preview-img.empty {
-background: #f9f9f9 url("{{ asset('images/placeholder-image.png') }}") center/60px no-repeat;
-}
-.file-error {
-    color: red;
-    font-size: 0.85rem;
-    text-align: center;
-    margin-top: 5px;
-}
-</style>
-
-{% block javascripts %}
-    {{ parent() }}
-    {{ encore_entry_script_tags('pcproducts') }}
-    <script>
-        // Pass dynamic URLs to JS using data attributes
-        document.addEventListener('DOMContentLoaded', function () {
-            const addModalBody = document.getElementById('addProductModalBody');
-            if (addModalBody) {
-                addModalBody.dataset.newUrl = "{{ absolute_url(path('app_pcproducts_new')) }}";
-                addModalBody.dataset.newAction = "{{ path('app_pcproducts_new') }}";
-            }
-        });
-    </script>
 {% endblock %}
 
-
+{% block feature_javascripts %}
+    {{ encore_entry_script_tags('pcproducts') }}
 {% endblock %}

@@ -1,181 +1,98 @@
-/*
-  PC Products modal helpers
-  - Prevents duplicate script initialization
-  - Ensures file preview works immediately after injecting form
-  - Prevents multiple form submissions (safe with validation)
-*/
-
+// assets/js/pcproducts.js
 import $ from 'jquery';
-import 'datatables.net-bs5';
 import 'bootstrap';
+import 'datatables.net-bs5';
 
-if (!window.pcProductsScriptInit) {
-  window.pcProductsScriptInit = true;
-  console.log("✅ PC Products script initialized");
+if (!window.pcProductsInit) {
+    window.pcProductsInit = true;
+    console.log("✅ pcproducts.js loaded");
 } else {
-  console.log("⚠️ PC Products script already initialized - skipping re-init");
+    console.log("⚠️ pcproducts.js already loaded");
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  $.fn.dataTable.ext.errMode = 'none';
-  const $table = $('#pcproductsTable');
-  const rowCount = $table.find('tbody tr').length;
-  const hasData = rowCount > 0 && !$table.find('tbody tr td').first().text().includes('No records');
+/* ---------------------------
+   PRODUCTS TABLE
+--------------------------- */
+function initPcProductsTable() {
+    const tableSelector = '#pcproductsTable';
+    const $table = $(tableSelector);
 
-  if (hasData && !$.fn.DataTable.isDataTable('#pcproductsTable')) {
-    $('#pcproductsTable').DataTable({
-      responsive: false,
-      paging: true,
-      pageLength: 10,
-      lengthChange: false,
-      searching: true,
-      order: [[0, 'asc']],
-      columnDefs: [{ targets: '_all', className: 'text-center' }],
-      language: {
-        searchPlaceholder: "Search...",
-        search: "_INPUT_",
-        zeroRecords: "No matching products found",
-        infoEmpty: "No products available",
-        info: "Showing _START_ to _END_ of _TOTAL_ products",
-        paginate: { previous: "Prev", next: "Next" }
-      },
-      autoWidth: false,
-      scrollX: false,
+    if (!$table.length) return; // not on products page
+
+    console.log("✅ initPcProductsTable running");
+
+    // Kill any existing instance on this table
+    if ($.fn.dataTable.isDataTable(tableSelector)) {
+        $table.DataTable().destroy();
+    }
+
+    $table.DataTable({
+        responsive: false,
+        scrollX: false,
+        paging: true,
+        pageLength: 10,
+        lengthChange: true,
+        searching: true,
+        order: [[0, 'asc']],
+        columnDefs: [{ targets: '_all', className: 'text-center' }],
+        language: {
+            searchPlaceholder: "Search...",
+            search: "INPUT",
+            zeroRecords: "No matching products found",
+            infoEmpty: "No products available",
+            paginate: { previous: "Prev", next: "Next" }
+        },
+        autoWidth: false,
+        stateSave: true, // keep page/search/sort
     });
-  }
+}
 
-  function setupImagePreview(form) {
-    let fileInput = form.querySelector('input[type="file"]');
-    if (!fileInput) return;
+/* ---------------------------
+   IMAGE PREVIEW
+--------------------------- */
+function initImagePreviews() {
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        if (input.dataset.previewBound === 'true') return;
+        input.dataset.previewBound = 'true';
 
-    const fresh = fileInput.cloneNode(true);
-    fileInput.parentNode.replaceChild(fresh, fileInput);
-    fileInput = fresh;
-    fileInput.setAttribute('accept', 'image/*');
+        input.addEventListener('change', function () {
+            const file = this.files[0];
+            const preview = this.closest('form')?.querySelector('.preview-img');
 
-    let preview = form.querySelector('.preview-img');
-    if (!preview) {
-      preview = document.createElement('img');
-      preview.classList.add('preview-img', 'empty');
-      fileInput.parentNode.insertBefore(preview, fileInput);
-    }
+            if (!preview) return;
 
-    let error = form.querySelector('.file-error');
-    if (!error) {
-      error = document.createElement('div');
-      error.classList.add('file-error');
-      fileInput.parentNode.insertBefore(error, fileInput.nextSibling);
-    }
-
-    fileInput.addEventListener('change', e => {
-      const file = e.target.files && e.target.files[0];
-      if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = evt => {
-          preview.src = evt.target.result;
-          preview.classList.remove('empty');
-        };
-        reader.readAsDataURL(file);
-        error.textContent = '';
-      } else {
-        preview.src = '';
-        preview.classList.add('empty');
-        error.textContent = '❌ Please select a valid image file.';
-        e.target.value = '';
-      }
-    }, { passive: true });
-  }
-
-  function attachSafeSubmit(form) {
-    if (!form || form.dataset.safeSubmitAttached === "true") return;
-    form.dataset.safeSubmitAttached = "true";
-
-    form.addEventListener('submit', function (e) {
-      if (!form.checkValidity()) {
-        e.preventDefault();
-        e.stopPropagation();
-        form.classList.add('was-validated');
-        return;
-      }
-
-      const btn = form.querySelector('button[type="submit"]');
-      if (btn) {
-        btn.disabled = true;
-        if (!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
-      }
-    }, { passive: false });
-  }
-
-  async function loadFormIntoModal(modalBody, url, formActionPath) {
-    try {
-      modalBody.innerHTML = '';
-      const res = await fetch(url, { credentials: 'same-origin' });
-      const html = await res.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const form = doc.querySelector('form');
-
-      if (!form) {
-        modalBody.innerHTML = '<p class="text-danger">Could not load form.</p>';
-        return null;
-      }
-
-      if (formActionPath) form.action = formActionPath;
-
-      modalBody.style.transition = 'opacity 0.18s ease';
-      modalBody.style.opacity = '0';
-
-      setTimeout(() => {
-        modalBody.innerHTML = '';
-        modalBody.appendChild(form);
-        requestAnimationFrame(() => {
-          modalBody.style.opacity = '1';
-          setupImagePreview(form);
-          attachSafeSubmit(form);
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('empty');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                preview.classList.add('empty');
+            }
         });
-      }, 120);
-
-      return form;
-    } catch (err) {
-      modalBody.innerHTML = '<p class="text-danger">Failed to load form.</p>';
-      console.error('Failed to load form:', err);
-      return null;
-    }
-  }
-
-  // Attach edit modal
-  document.querySelectorAll('[id^="editModal"]').forEach(modal => {
-    if (modal.dataset.listenerAdded === 'true') return;
-    modal.dataset.listenerAdded = 'true';
-
-    modal.addEventListener('show.bs.modal', function () {
-      const id = this.id.replace('editModal', '');
-      const modalBody = document.getElementById('editModalBody' + id);
-      if (!modalBody) return;
-
-      const url = `/pcproducts/${id}/edit`;
-      const actionPath = `/pcproducts/${id}/edit`;
-      loadFormIntoModal(modalBody, url, actionPath);
     });
-  });
+}
 
-  // Add modal
-  const addProductModal = document.getElementById('addProductModal');
-  if (addProductModal && addProductModal.dataset.listenerAdded !== 'true') {
-    addProductModal.dataset.listenerAdded = 'true';
+/* ---------------------------
+   DELETE CONFIRM
+--------------------------- */
+function initDeleteConfirm() {
+    window.deleteProductRow = function () {
+        return confirm('Are you sure you want to delete this product?');
+    };
+}
 
-    addProductModal.addEventListener('show.bs.modal', function () {
-      const modalBody = document.getElementById('addProductModalBody');
-      if (!modalBody) return;
+/* ---------------------------
+   MASTER INIT (Products page)
+--------------------------- */
+function initPcProductsPage() {
+    initPcProductsTable();
+    initImagePreviews();
+    initDeleteConfirm();
+}
 
-      if (modalBody.dataset.loaded === 'true') return;
-
-      const url = modalBody.dataset.newUrl;
-      const actionPath = modalBody.dataset.newAction;
-      loadFormIntoModal(modalBody, url, actionPath).then(form => {
-        if (form) modalBody.dataset.loaded = 'true';
-      });
-    });
-  }
-});
+document.addEventListener('DOMContentLoaded', initPcProductsPage);
+document.addEventListener('turbo:load', initPcProductsPage);

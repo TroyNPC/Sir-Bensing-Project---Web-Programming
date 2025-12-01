@@ -7,64 +7,10 @@
 <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
 <link rel="stylesheet" href="{{ asset('build/app.css') }}"> 
 
-<style>
-  body {
-    font-family: 'Open Sans', sans-serif !important;
-    overflow-x: hidden;
-    background: #fff;
-    color: #2e2e2e;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Montserrat', sans-serif !important;
-    font-weight: 700;
-  }
-  p, a, li, button, span {
-    font-family: 'Open Sans', sans-serif !important;
-  }
-  :root {
-    --primary-dark: #2e2e2e;
-    --primary-orange: #F88F6A;
-  }
-  .btn-orange {
-    background: var(--primary-orange);
-    color: #fff;
-    transition: 0.3s;
-    border: none;
-  }
-  .btn-orange:hover {
-    background: #F88F6A;
-    color: #fff;
-  }
-  .text-orange { color: var(--primary-orange); }
-  .card {
-    border: none;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-  }
-    .card-img-top {
-    width: 100%;
-    height: 200px;                /* Keeps consistent card height */
-    object-fit: contain !important; /* Ensures full image fits inside */
-    background-color: #f8f9fa;     /* Light background behind transparent images */
-    border: 1px solid #ddd;        /* Adds clean border */
-    border-radius: 10px;           /* Slight rounding to match card */
-    padding: 5px;                  /* Adds spacing inside the frame */
-    box-sizing: border-box;        /* Keeps layout consistent */
-  }
+ {% block feature_stylesheets %}
+<link rel="stylesheet" href="{{ asset('Arrangestyle/projects/customerhome.css') }}">
+{% endblock %}
 
-  .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  }
-  header.navbar { background: var(--primary-dark); }
-  header .nav-link {
-    color: #fff !important;
-    font-weight: 500;
-    transition: 0.3s;
-  }
-  header .nav-link:hover { color: var(--primary-orange) !important; }
-  footer { background: var(--primary-dark); color: #fff; }
-</style>
 
 
 

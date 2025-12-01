@@ -25,7 +25,9 @@ Encore
     .addEntry('pcproducts', './assets/js/pcproducts.js')
     .addEntry('stocks', './assets/js/stocks.js')
     .addEntry('user', './assets/js/user.js')
-    .addEntry('servicebooking', './assets/js/servicebooking.js')
+    .addEntry('booking', './assets/js/booking.js')
+    .addEntry('adminlayout', './assets/js/adminlayout.js')
+    .addEntry('customerproducts', './assets/js/customerproducts.js')
 
 
 

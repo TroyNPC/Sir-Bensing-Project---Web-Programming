@@ -1,0 +1,125 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+:root {
+  --dark-bg: #2E2E2E;
+  --accent: #F88F6A;
+  --light-bg: #f5f5f5;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  background-color: var(--light-bg);
+}
+
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background-color: var(--dark-bg);
+  color: white;
+  padding: 1rem;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+  transform: translateX(0); /* ✅ Visible by default */
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+/* Header */
+.admin-header {
+  background-color: var(--dark-bg);
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 65px;
+  width: calc(100% - 240px);
+  margin-left: 240px;
+  z-index: 999;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+.admin-header.shifted {
+  margin-left: 0;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+/* Main content */
+.main-content {
+  margin-left: 240px;
+  margin-top: 65px;
+  padding: 2rem;
+  background-color: var(--light-bg);
+  transition: margin-left 0.3s ease;
+  min-height: calc(100vh - 65px);
+}
+.main-content.expanded {
+  margin-left: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.collapsed {
+    transform: translateX(0);
+  }
+  .admin-header {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* Sidebar items */
+.sidebar .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.sidebar .nav-link {
+  color: #ccc;
+  text-decoration: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.sidebar .nav-link:hover {
+  background-color: rgba(248, 143, 106, 0.15);
+  color: #fff;
+}
+.sidebar .nav-link.active {
+  background-color: var(--accent);
+  color: #2E2E2E;
+  font-weight: 600;
+}
+.sidebar .collapse a {
+  padding-left: 2.5rem;
+  font-size: 0.9rem;
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+/* Dropdown */
+.dropdown-menu {
+  font-size: 0.9rem;
+}

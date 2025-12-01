@@ -2,6 +2,18 @@
 
 {% block title %}Servicebooking Index{% endblock %}
 
+{% block feature_stylesheets %}
+    <link rel="stylesheet" href="{{ asset('Arrangestyle/servicebooking/servicebooking.css') }}">
+{% endblock %}
+
+{% block feature_javascripts %}
+    {{ encore_entry_script_tags('booking') }}
+{% endblock %}
+
+
+
+
+
 {% block content %}
 <div class="container-fluid py-5">
 
@@ -13,7 +25,7 @@
     <!-- Table -->
     <div class="card border-0 shadow-sm rounded-4 mx-1">
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div class="table-responsive table-scroll">
                 <table id="servicebookingTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1400px;">
                     <thead style="background-color:#F88F6A; color:white;">
                         <tr class="text-center">
@@ -34,9 +46,13 @@
                             <td class="text-center">{{ servicebooking.customername }}</td>
                             <td class="text-center">{{ servicebooking.serviceType }}</td>
                             <td class="text-center">{{ servicebooking.advisercategory }}</td>
-                            <td class="text-center">{{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : '' }}</td>
+                            <td class="text-center">
+                                {{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : '' }}
+                            </td>
                             <td class="text-center">{{ servicebooking.notes }}</td>
-                            <td class="text-center">{{ servicebooking.getCreatedAt() ? servicebooking.getCreatedAt()|date('Y-m-d H:i:s') : '' }}</td>
+                            <td class="text-center">
+                                {{ servicebooking.getCreatedAt() ? servicebooking.getCreatedAt()|date('Y-m-d H:i:s') : '' }}
+                            </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                                     <button type="button"
@@ -102,7 +118,8 @@
 
                         {% else %}
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">No records found</td>
+                            {# 8 columns in thead → colspan 8 here #}
+                            <td colspan="8" class="text-center text-muted py-4">No records found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -111,20 +128,7 @@
         </div>
     </div>
 </div>
-
-<style>
-.table-hover tbody tr:hover { background-color: #f8f9fa; }
-.badge { font-weight: 500; }
-.btn-sm { font-weight: 600; }
-#servicebookingTable{
-        white-space: nowrap; /* prevent wrapping */
-    vertical-align: middle;
-}
-</style>
-
-{% block javascripts %}
-{{ parent() }}
-{{ encore_entry_script_tags('servicebooking') }}
 {% endblock %}
 
-{% endblock %}
+
+

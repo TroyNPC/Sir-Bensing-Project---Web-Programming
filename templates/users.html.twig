@@ -1,0 +1,136 @@
+{% extends 'adminlayout.html.twig' %}
+
+{% block title %}Users{% endblock %}
+
+{% block Stylesheet %}
+<link rel="stylesheet" href="{{ asset('Arrangestyle/users.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">👥 Users</h3>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('danger') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="card border-0 shadow-sm rounded-4 mx-1">
+        <div class="card-body p-0">
+            <div class="table-responsive table-scroll">
+                <table id="usersTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:500px;">
+                    <thead style="background-color:#F88F6A; color:white;">
+                        <tr class="text-center">
+                            <th width="8%">ID</th>
+                            <th width="20%">Username</th>
+                            <th width="25%">Roles</th>
+                            <th width="30%">Password (Hashed)</th>
+                            <th width="17%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if users|length > 0 %}
+                        {% for user in users %}
+                        <tr class="text-center">
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>
+                                {% for role in user.roles %}
+                                    <span class="badge bg-secondary">{{ role }}</span>
+                                {% endfor %}
+                            </td>
+                            <td class="text-muted password-cell" title="{{ user.password }}">
+                                {{ user.password|length > 25 ? user.password|slice(0,25) ~ '...' : user.password }}
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <button class="btn btn-sm fw-semibold"
+                                            style="background-color:#2e2e2e; color:white; border-radius:6px; padding: 6px 12px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editUserModal{{ user.id }}">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-sm fw-semibold"
+                                            style="background-color:#dc3545; color:white; border-radius:6px; padding: 6px 12px;"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteUserModal{{ user.id }}">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- EDIT USER MODAL -->
+                        <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-md modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4 shadow-lg">
+                                    <div class="modal-header" style="background-color:#2e2e2e; color:white;">
+                                        <h5 class="modal-title">Edit User #{{ user.id }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        {{ form_start(userForms[user.id]) }}
+                                        <div class="mb-3">
+                                            <label class="fw-semibold">Username</label>
+                                            {{ form_widget(userForms[user.id].username, { 'attr': {'class':'form-control shadow-sm'} }) }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="fw-semibold">Roles</label>
+                                            {{ form_widget(userForms[user.id].roles, { 'attr': {'class':'form-control shadow-sm'} }) }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="fw-semibold">Password (hashed)</label>
+                                            {{ form_widget(userForms[user.id].password, { 'attr': {'class':'form-control shadow-sm'} }) }}
+                                        </div>
+                                        <button type="submit" class="btn btn-success">Save Changes</button>
+                                        {{ form_end(userForms[user.id]) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DELETE USER MODAL -->
+                        <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-sm modal-dialog-centered">
+                                <div class="modal-content border-0 rounded-4 shadow-lg">
+                                    <div class="modal-header" style="background-color:#dc3545; color:white;">
+                                        <h5 class="modal-title">Delete User #{{ user.id }}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <p>Are you sure you want to delete <strong>{{ user.username }}</strong>?</p>
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="post" action="{{ path('app_users_delete', {'id': user.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete-user' ~ user.id) }}">
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No users found</td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+{{ encore_entry_script_tags('user') }}
+{% endblock %}

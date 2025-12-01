@@ -1,0 +1,25 @@
+
+  :root {
+    --primary-dark: #2e2e2e;
+    --primary-orange: #F88F6A;
+  }
+  .btn-orange {
+    background: var(--primary-orange);
+    color: #fff;
+    border: none;
+    transition: 0.3s;
+  }
+  .btn-orange:hover {
+    background: #e47654;
+    color: #fff;
+  }
+  .text-orange { color: var(--primary-orange); }
+  .card {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }

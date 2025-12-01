@@ -1,0 +1,61 @@
+.card {
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.form-check-input:checked {
+    background-color: #F88F6A !important;
+    border-color: #F88F6A !important;
+}
+
+#usersTable th,
+#usersTable td {
+    white-space: nowrap; /* prevent wrapping */
+    vertical-align: middle;
+}
+
+/* Optional: modal styling */
+.modal-content {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons in table actions */
+.btn-sm {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+/* Edit button */
+.btn-sm.fw-semibold[style*="2e2e2e"] {
+    background-color: #2e2e2e;
+    color: white;
+}
+
+/* Delete button */
+.btn-sm.fw-semibold[style*="dc3545"] {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Optional: DataTable input placeholder style */
+.dataTables_filter input {
+    border-radius: 6px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+}
+
+/* Table responsive wrapper */
+.table-responsive {
+    overflow-x: auto;
+}

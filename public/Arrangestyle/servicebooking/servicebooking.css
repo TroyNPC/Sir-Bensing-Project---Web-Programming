@@ -1,0 +1,42 @@
+/* Reusable Button Styles */
+.btn-orange {
+    background-color: #F88F6A;
+    color: white;
+    border-radius: 8px;
+    padding: 6px 14px;
+    border: none;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+.btn-orange:hover {
+    background-color: #e67852;
+    color: white;
+}
+
+.btn-black {
+    background-color: #2e2e2e;
+    color: white;
+    border-radius: 8px;
+    padding: 6px 14px;
+    border: none;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+.btn-black:hover {
+    background-color: #1c1c1c;
+    color: white;
+}
+
+.btn-red {
+    background-color: #d9534f;
+    color: white;
+    border-radius: 8px;
+    padding: 6px 14px;
+    border: none;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+.btn-red:hover {
+    background-color: #c9302c;
+    color: white;
+}

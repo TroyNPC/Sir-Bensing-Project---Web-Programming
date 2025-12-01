@@ -1,0 +1,33 @@
+.card { background-color: #fff; overflow: hidden; }
+.table-hover tbody tr:hover { background-color: #f8f9fa; }
+.badge { font-weight: 500; }
+.product-thumb { border-radius: 6px; padding: 3px; }
+.form-check-input:checked {
+background-color: #F88F6A !important;
+border-color: #F88F6A !important;
+}
+#pcproductsTable th, #pcproductsTable td {
+    white-space: nowrap; /* prevent wrapping */
+    vertical-align: middle;
+}
+/* ✅ Add Modal Image Preview Only */
+.preview-img {
+display: block;
+width: 220px;
+height: 220px;
+object-fit: contain;
+margin: 0 auto 10px auto;
+border-radius: 8px;
+border: 2px dashed #ddd;
+background-color: #f9f9f9;
+padding: 5px;
+}
+.preview-img.empty {
+background: #f9f9f9 url("{{ asset('images/placeholder-image.png') }}") center/60px no-repeat;
+}
+.file-error {
+    color: red;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 5px;
+}

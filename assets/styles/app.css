@@ -1,4 +1,6 @@
 @import "~bootstrap/scss/bootstrap";
+@import './styles/accessdenied.css';
+
 
 html, body{
    padding: 0px;

@@ -1,6 +1,10 @@
 {% extends 'adminlayout.html.twig' %}
 
 {% block title %}PC Product Details{% endblock %}
+{% block feature_stylesheets %}
+<link rel="stylesheet" href="/Arrangestyle/pcproducts/adminpcproductshow.css">
+{% endblock %}
+
 
 {% block content %}
 <div class="container py-5">
@@ -68,55 +72,5 @@
     </div>
 </div>
 
-{# Inline styles to keep everything contained in this template so it matches the list theme #}
-<style>
-/* category badge (orange) */
-.product-category {
-    display:inline-block;
-    background-color:#F88F6A;
-    color:#ffffff;
-    padding:0.32rem 0.6rem;
-    border-radius:0.45rem;
-    font-weight:600;
-    font-size:0.9rem;
-    vertical-align:middle;
-}
 
-/* button styles consistent with list theme */
-.btn-dark-theme {
-    background-color: #2e2e2e;
-    color: #ffffff;
-    border-radius: 6px;
-    padding: 0.40rem 0.75rem;
-    border: none;
-}
-.btn-dark-theme:hover { background-color: #1f1f1f; color:#fff; }
-
-.btn-orange {
-    background-color: #F88F6A;
-    color: #ffffff;
-    border-radius: 6px;
-    padding: 0.40rem 0.75rem;
-    border: none;
-}
-.btn-orange:hover { background-color: #e37453; color:#fff; }
-
-.btn-delete-custom {
-    background-color: #dc3545;
-    color: #ffffff;
-    border-radius:6px;
-    padding: 0.40rem 0.75rem;
-    border: none;
-}
-.btn-delete-custom:hover { background-color: #b72932; color:#fff; }
-
-/* ensure inline form button aligns perfectly with anchors */
-.inline-delete-form { display:inline-flex; margin:0; padding:0; align-items:center; }
-
-/* responsive tweaks */
-@media (max-width: 576px) {
-    .product-category { font-size: 0.85rem; padding: .28rem .5rem; }
-    .card-body { padding: 1rem; }
-}
-</style>
 {% endblock %}

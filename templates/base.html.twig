@@ -9,10 +9,18 @@
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('build/app.css') }}">
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-
+    
     {% block stylesheets %}
-      {{ encore_entry_link_tags('app') }}
-    {% endblock %}
+    {{ encore_entry_link_tags('app') }}
+
+    {# Common layout CSS #}
+    <link rel="stylesheet" href="{{ asset('Arrangestyle/adminlayout.css') }}?v=1.1">
+
+    {# Child templates can inject their own CSS here #}
+    {% block feature_stylesheets %}{% endblock %}
+  {% endblock %}
+
+
 
     {% block javascripts %}
 

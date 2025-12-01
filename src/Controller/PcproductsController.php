@@ -195,6 +195,6 @@ final class PcproductsController extends AbstractController
             $this->addFlash('success', '🗑️ Product deleted successfully!');
         }
 
-        return $this->redirectToRoute('app_pcproducts_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_pcproducts_index');
     }
 }

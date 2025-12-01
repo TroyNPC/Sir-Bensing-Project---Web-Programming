@@ -1,0 +1,38 @@
+{% extends 'headerfooter.html.twig' %}
+
+{% block title %}Register{% endblock %}
+{% block feature_stylesheets %}
+<link rel="stylesheet" href="{{ asset('Arrangestyle/register.css') }}?v=1.0">
+{% endblock %}
+
+{% block body %}
+<div class="register-container">
+    <div class="register-form-container">
+        {{ form_start(registrationForm, {'attr': {'class': 'register-form'}}) }}
+            <h1 class="register-title">Register</h1>
+            <div class="register-form-row">
+                <label for="username">Username</label>
+                {{ form_widget(registrationForm.username, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="register-form-row">
+                <label for="password">Password</label>
+                {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="register-form-check">
+                {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'register-form-check-input'}}) }}
+                <label class="register-form-check-label" for="agreeTerms">
+                    Agree Terms
+                </label>
+            </div>
+
+            <button type="submit" class="register-btn">Register</button>
+            <div class="register-login-link">
+            Already have an account? <a href="{{ path('app_login') }}">Sign in</a>
+        </div>
+        <br>
+        {{ form_end(registrationForm) }}
+    </div>
+</div>
+{% endblock %}

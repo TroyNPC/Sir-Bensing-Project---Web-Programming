@@ -1,0 +1,82 @@
+/* Overall Page Centering */
+form {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* Labels */
+label {
+    font-weight: 600;
+    color: #2e2e2e;
+    margin-top: 1rem;
+}
+
+/* Inputs */
+.form-control {
+    border-radius: 8px;
+    box-shadow: none;
+    border: 1px solid #ccc;
+}
+
+.form-control:focus {
+    border-color: #F88F6A;
+    box-shadow: 0 0 0 0.15rem rgba(248, 143, 106, 0.25);
+}
+
+/* Button - Orange Primary */
+.btn-primary {
+    background-color: #F88F6A !important;
+    border: none !important;
+    border-radius: 8px;
+    width: 100%;
+    padding: 0.75rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #e37453 !important;
+    transform: scale(1.02);
+}
+
+/* "You are logged in as..." link */
+a {
+    color: #F88F6A;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #e37453;
+    text-decoration: none;
+}
+
+/* Alert Box */
+.alert-danger {
+    border-radius: 8px;
+}
+
+/* Remember Me Checkbox */
+.checkbox label {
+    margin-top: 1rem;
+    color: #2e2e2e;
+}
+
+/* Headline */
+h1 {
+    color: #2e2e2e;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+/* Mobile Adjustment */
+@media (max-width: 576px) {
+    form {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}

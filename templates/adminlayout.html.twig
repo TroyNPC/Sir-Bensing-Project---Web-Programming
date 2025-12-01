@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+
 <div class="admin-layout">
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
@@ -42,31 +43,19 @@
         </div>
       </li>
 
-      <!-- Users -->
-      <li class="nav-item">
-        <button class="nav-link d-flex justify-content-between align-items-center w-100 border-0 bg-transparent"
-                type="button" data-bs-toggle="collapse" data-bs-target="#usersMenu"
-                aria-expanded="false" aria-controls="usersMenu">
-          <span><i class="bi bi-people me-2"></i> Users</span>
-          <i class="bi bi-chevron-down small toggle-icon"></i>
-        </button>
-        <div class="collapse {% if 'user' in app.request.get('_route') %}show{% endif %}" id="usersMenu">
-          <a href="{{ path('app_user_index') }}"
-             class="nav-link {% if app.request.get('_route') == 'app_user_index' %}active{% endif %}">
-            <i class="bi bi-list-check me-2"></i> User List
-          </a>
-          <a href="{{ path('app_user_add_admin') }}"
-             class="nav-link {% if app.request.get('_route') == 'app_user_add_admin' %}active{% endif %}">
-            <i class="bi bi-person-plus me-2"></i> Add User
-          </a>
-        </div>
-      </li>
-
       <!-- Service Booking -->
       <li class="nav-item">
         <a href="{{ path('app_servicebooking_index') }}"
            class="nav-link {% if app.request.get('_route') == 'app_servicebooking_index' %}active{% endif %}">
            <i class="bi bi-calendar-check me-2"></i> Service Booking
+        </a>
+      </li>
+  
+        <!-- Service Booking -->
+      <li class="nav-item">
+        <a href="{{ path('app_users') }}"
+           class="nav-link {% if app.request.get('_route') == 'app_users' %}active{% endif %}">
+           <i class="bi bi-person-check me-2"></i> Users
         </a>
       </li>
       
@@ -100,161 +89,136 @@
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const sidebar = document.getElementById('sidebar');
-  const mainContent = document.getElementById('mainContent');
-  const header = document.getElementById('adminHeader');
-  const toggleBtn = document.getElementById('toggleSidebar');
-
-  // ✅ Sidebar starts already visible
-  sidebar.classList.remove('collapsed');
-  mainContent.classList.remove('expanded');
-  header.classList.remove('shifted');
-
-  // ✅ Toggle open/close
-  toggleBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded');
-    header.classList.toggle('shifted');
-  });
-
-  // Rotate collapse icons
-  document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
-    const icon = button.querySelector('.toggle-icon');
-    const target = document.querySelector(button.getAttribute('data-bs-target'));
-    if (target) {
-      target.addEventListener('show.bs.collapse', () => icon.style.transform = 'rotate(180deg)');
-      target.addEventListener('hide.bs.collapse', () => icon.style.transform = 'rotate(0deg)');
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('adminlayout') }}
+    <script>
+        if (!window.adminLayoutInit) {
+        window.adminLayoutInit = true;
+        console.log("✅ adminlayout.js loaded");
     }
-  });
-});
-</script>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+    /* =========================================================
+      ADMIN LAYOUT / SIDEBAR
+    ========================================================= */
 
-:root {
-  --dark-bg: #2E2E2E;
-  --accent: #F88F6A;
-  --light-bg: #f5f5f5;
-}
+    function initSidebar() {
+        const sidebar     = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const header      = document.getElementById('adminHeader');
+        const toggleBtn   = document.getElementById('toggleSidebar');
 
-body {
-  font-family: "Montserrat", sans-serif;
-  background-color: var(--light-bg);
-}
+        if (!sidebar || !mainContent || !header || !toggleBtn) return;
 
-.admin-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
+        console.log("✅ initSidebar running");
 
-/* Sidebar */
-.sidebar {
-  width: 240px;
-  background-color: var(--dark-bg);
-  color: white;
-  padding: 1rem;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  overflow-y: auto;
-  transform: translateX(0); /* ✅ Visible by default */
-  transition: transform 0.3s ease;
-  z-index: 1000;
-}
-.sidebar.collapsed {
-  transform: translateX(-100%);
-}
+        /* ---------------------------
+          Restore collapsed state
+        --------------------------- */
+        const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
-/* Header */
-.admin-header {
-  background-color: var(--dark-bg);
-  color: white;
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 65px;
-  width: calc(100% - 240px);
-  margin-left: 240px;
-  z-index: 999;
-  transition: all 0.3s ease;
-  box-shadow: none;
-}
-.admin-header.shifted {
-  margin-left: 0;
-  width: 100%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-}
+        sidebar.classList.toggle('collapsed', collapsed);
+        mainContent.classList.toggle('expanded', collapsed);
+        header.classList.toggle('shifted', collapsed);
 
-/* Main content */
-.main-content {
-  margin-left: 240px;
-  margin-top: 65px;
-  padding: 2rem;
-  background-color: var(--light-bg);
-  transition: margin-left 0.3s ease;
-  min-height: calc(100vh - 65px);
-}
-.main-content.expanded {
-  margin-left: 0;
-}
+        /* ---------------------------
+          Sidebar toggle button
+          (prevent duplicate binding)
+        --------------------------- */
+        if (!toggleBtn.dataset.bound) {
+            toggleBtn.dataset.bound = "true";
 
-/* Responsive */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-  .sidebar.collapsed {
-    transform: translateX(0);
-  }
-  .admin-header {
-    margin-left: 0 !important;
-    width: 100% !important;
-  }
-  .main-content {
-    margin-left: 0 !important;
-  }
-}
+            toggleBtn.addEventListener('click', () => {
+                const isCollapsed = sidebar.classList.toggle('collapsed');
 
-/* Sidebar items */
-.sidebar .logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
-.sidebar .nav-link {
-  color: #ccc;
-  text-decoration: none;
-  padding: 0.75rem 1.25rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-.sidebar .nav-link:hover {
-  background-color: rgba(248, 143, 106, 0.15);
-  color: #fff;
-}
-.sidebar .nav-link.active {
-  background-color: var(--accent);
-  color: #2E2E2E;
-  font-weight: 600;
-}
-.sidebar .collapse a {
-  padding-left: 2.5rem;
-  font-size: 0.9rem;
-}
+                mainContent.classList.toggle('expanded', isCollapsed);
+                header.classList.toggle('shifted', isCollapsed);
 
-.toggle-icon {
-  transition: transform 0.3s ease;
-}
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+            });
+        }
 
-/* Dropdown */
-.dropdown-menu {
-  font-size: 0.9rem;
-}
-</style>
+        /* ---------------------------
+          Submenu collapse state
+        --------------------------- */
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+            if (button.dataset.bound) return;
+            button.dataset.bound = "true";
+
+            const icon   = button.querySelector('.toggle-icon');
+            const target = document.querySelector(button.dataset.bsTarget);
+
+            if (!target) return;
+
+            const menuId = target.id;
+
+            // Restore submenu open state
+            const wasOpen = localStorage.getItem(menuId) === 'true';
+            target.classList.toggle('show', wasOpen);
+
+            if (icon) {
+                icon.style.transform = wasOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+
+            // Save state on open/close
+            target.addEventListener('show.bs.collapse', () => {
+                localStorage.setItem(menuId, 'true');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            });
+
+            target.addEventListener('hide.bs.collapse', () => {
+                localStorage.setItem(menuId, 'false');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            });
+        });
+    }
+
+    /* =========================================================
+      FORCE FULL RELOAD NAVIGATION
+    ========================================================= */
+
+    function initForceReloadLinks() {
+        const links = document.querySelectorAll(
+            '.sidebar a.nav-link[href]:not([href^="#"]), a.nav-link[href]:not([href^="#"])'
+        );
+
+        links.forEach(link => {
+            if (link.dataset.forceReloadBound) return;
+            link.dataset.forceReloadBound = "true";
+
+            link.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+
+                if (
+                    href &&
+                    !href.startsWith('http') &&
+                    !href.startsWith('#') &&
+                    !href.startsWith('javascript')
+                ) {
+                    e.preventDefault();
+                    window.location.href = href; // ✅ FORCE FULL PAGE LOAD
+                }
+            });
+        });
+    }
+
+    /* =========================================================
+      MASTER INIT
+    ========================================================= */
+
+    function initAdminLayout() {
+        initSidebar();
+        initForceReloadLinks();
+    }
+
+    document.addEventListener('DOMContentLoaded', initAdminLayout);
+    document.addEventListener('turbo:load', initAdminLayout);
+    </script>
+     {% block feature_javascripts %}
+     {% endblock %}
+
+{% endblock %}
+
+
+
 {% endblock %}
