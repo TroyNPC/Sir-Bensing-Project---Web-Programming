@@ -120,7 +120,7 @@ final class PcproductsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
+            $pcproduct->setUpdatedAt(new \DateTimeImmutable());
             // ✅ Handle availability change (true/false)
             $isAvailable = $form->get('isavailable')->getData();
             $pcproduct->setIsavailable($isAvailable);

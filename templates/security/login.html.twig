@@ -1,40 +1,40 @@
-{% extends 'headerfooter.html.twig' %}
+    {% extends 'headerfooter.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
-{% block feature_stylesheets %}
-<link rel="stylesheet" href="{{ asset('Arrangestyle/login.css') }}?v=1.0">
-{% endblock %}
-{% block body %}
-<form method="post" class="login-form">
-    {% if error %}
-        <div class="login-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
+    {% block feature_stylesheets %}
+    <link rel="stylesheet" href="{{ asset('Arrangestyle/login.css') }}?v=1.0">
+    {% endblock %}
+    {% block body %}
+    <form method="post" class="login-form" data-turbo="false">
+        {% if error %}
+            <div class="login-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
 
-    {% if app.user %}
-        <div class="mb-3">
-            You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}" class="login-page-link">Logout</a>
+        {% if app.user %}
+            <div class="mb-3">
+                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}" class="login-page-link">Logout</a>
+            </div>
+        {% endif %}
+
+        <h1 class="login-title">Please sign in</h1>
+        <label for="inputUsername" class="login-label">Username</label>
+        <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="login-input" autocomplete="username" required autofocus>
+        <label for="inputPassword" class="login-label">Password</label>
+        <input type="password" name="password" id="inputPassword" class="login-input" autocomplete="current-password" required>
+        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+        <div class="login-checkbox">
+            <label>
+                <input type="checkbox" name="_remember_me"> Remember me
+            </label>
         </div>
-    {% endif %}
+        <br>
+        <button class="login-btn" type="submit">
+            Sign in
+        </button>
+        <br><br> 
+        <div class="login-link-section">
+            Don't have an account? <a href="{{ path('app_register') }}" class="login-page-link">Sign up</a>
+        </div>
+        <br>
+    </form>
 
-    <h1 class="login-title">Please sign in</h1>
-    <label for="inputUsername" class="login-label">Username</label>
-    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="login-input" autocomplete="username" required autofocus>
-    <label for="inputPassword" class="login-label">Password</label>
-    <input type="password" name="password" id="inputPassword" class="login-input" autocomplete="current-password" required>
-    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
-    <div class="login-checkbox">
-        <label>
-            <input type="checkbox" name="_remember_me"> Remember me
-        </label>
-    </div>
-    <br>
-    <button class="login-btn" type="submit">
-        Sign in
-    </button>
-    <br><br> 
-    <div class="login-link-section">
-        Don't have an account? <a href="{{ path('app_register') }}" class="login-page-link">Sign up</a>
-    </div>
-    <br>
-</form>
-{% endblock %}
+    {% endblock %}

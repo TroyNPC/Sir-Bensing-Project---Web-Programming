@@ -1,5 +1,10 @@
 {% extends 'base.html.twig' %}
 
+{% block meta %}
+    {{ parent() }}
+    <meta name="turbo-visit-control" content="reload">
+{% endblock %}
+
 {% block body %}
 
 <div class="admin-layout">
@@ -36,10 +41,10 @@
              class="nav-link {% if app.request.get('_route') == 'app_pcproducts_new' %}active{% endif %}">
             <i class="bi bi-plus-circle me-2"></i> Add Product
           </a>
-        <a href="{{ path('app_stocks_index') }}"
-           class="nav-link {% if app.request.get('_route') == 'app_stocks_index' %}active{% endif %}">
-           <i class="bi bi-box-seam me-2"></i> Stocks
-        </a>
+          <a href="{{ path('app_stocks_index') }}"
+             class="nav-link {% if app.request.get('_route') == 'app_stocks_index' %}active{% endif %}">
+             <i class="bi bi-box-seam me-2"></i> Stocks
+          </a>
         </div>
       </li>
 
@@ -50,15 +55,15 @@
            <i class="bi bi-calendar-check me-2"></i> Service Booking
         </a>
       </li>
-  
-        <!-- Service Booking -->
+
+      <!-- Users -->
       <li class="nav-item">
         <a href="{{ path('app_users') }}"
            class="nav-link {% if app.request.get('_route') == 'app_users' %}active{% endif %}">
            <i class="bi bi-person-check me-2"></i> Users
         </a>
       </li>
-      
+
     </ul>
   </div>
 
@@ -68,19 +73,19 @@
       <button id="toggleSidebar" class="btn btn-link text-white me-3 fs-4">
         <i class="bi bi-list"></i>
       </button>
-      <h5 class="mb-0 fw-bold" style="color: var(--accent);">Welcome Admin User!</h5>
+      <h5 class="mb-0 fw-bold" style="color: var(--accent);">Welcome {{ app.user.username }}!</h5>
     </div>
 
-    <div class="dropdown">
-      <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-        <img src="{{ asset('profile.jpg') }}" alt="Profile" class="rounded-circle me-2" width="35" height="35">
-        <span class="fw-bold" style="color: var(--accent);">Admin</span>
-      </a>
-      <ul class="dropdown-menu dropdown-menu-end shadow">
-        <li><a class="dropdown-item" href="#">Account Settings</a></li>
-        <li><a class="dropdown-item" href="#">Logout</a></li>
-      </ul>
-    </div>
+<div class="d-flex align-items-center gap-3">
+    <span class="fw-bold" style="color: var(--accent);">
+        {{ app.user.username }}
+    </span>
+
+    <a href="{{ path('app_logout') }}" class="btn btn-sm btn-light fw-bold">
+        Logout
+    </a>
+</div>
+
   </div>
 
   <!-- Main Admin Content -->
@@ -92,15 +97,12 @@
 {% block javascripts %}
     {{ parent() }}
     {{ encore_entry_script_tags('adminlayout') }}
-    <script>
-        if (!window.adminLayoutInit) {
+
+<script>
+    if (!window.adminLayoutInit) {
         window.adminLayoutInit = true;
         console.log("✅ adminlayout.js loaded");
     }
-
-    /* =========================================================
-      ADMIN LAYOUT / SIDEBAR
-    ========================================================= */
 
     function initSidebar() {
         const sidebar     = document.getElementById('sidebar');
@@ -112,19 +114,12 @@
 
         console.log("✅ initSidebar running");
 
-        /* ---------------------------
-          Restore collapsed state
-        --------------------------- */
         const collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
 
         sidebar.classList.toggle('collapsed', collapsed);
         mainContent.classList.toggle('expanded', collapsed);
         header.classList.toggle('shifted', collapsed);
 
-        /* ---------------------------
-          Sidebar toggle button
-          (prevent duplicate binding)
-        --------------------------- */
         if (!toggleBtn.dataset.bound) {
             toggleBtn.dataset.bound = "true";
 
@@ -138,9 +133,6 @@
             });
         }
 
-        /* ---------------------------
-          Submenu collapse state
-        --------------------------- */
         document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
             if (button.dataset.bound) return;
             button.dataset.bound = "true";
@@ -150,17 +142,15 @@
 
             if (!target) return;
 
-            const menuId = target.id;
+            const menuId   = target.id;
+            const wasOpen  = localStorage.getItem(menuId) === 'true';
 
-            // Restore submenu open state
-            const wasOpen = localStorage.getItem(menuId) === 'true';
             target.classList.toggle('show', wasOpen);
 
             if (icon) {
                 icon.style.transform = wasOpen ? 'rotate(180deg)' : 'rotate(0deg)';
             }
 
-            // Save state on open/close
             target.addEventListener('show.bs.collapse', () => {
                 localStorage.setItem(menuId, 'true');
                 if (icon) icon.style.transform = 'rotate(180deg)';
@@ -172,10 +162,6 @@
             });
         });
     }
-
-    /* =========================================================
-      FORCE FULL RELOAD NAVIGATION
-    ========================================================= */
 
     function initForceReloadLinks() {
         const links = document.querySelectorAll(
@@ -196,15 +182,11 @@
                     !href.startsWith('javascript')
                 ) {
                     e.preventDefault();
-                    window.location.href = href; // ✅ FORCE FULL PAGE LOAD
+                    window.location.href = href;
                 }
             });
         });
     }
-
-    /* =========================================================
-      MASTER INIT
-    ========================================================= */
 
     function initAdminLayout() {
         initSidebar();
@@ -213,12 +195,13 @@
 
     document.addEventListener('DOMContentLoaded', initAdminLayout);
     document.addEventListener('turbo:load', initAdminLayout);
-    </script>
-     {% block feature_javascripts %}
-     {% endblock %}
+</script>
+
+{% block feature_javascripts %}
+{% endblock %}
+{% endblock %}
 
 {% endblock %}
 
 
 
-{% endblock %}
