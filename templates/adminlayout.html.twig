@@ -30,18 +30,14 @@
                 type="button" data-bs-toggle="collapse" data-bs-target="#productsMenu"
                 aria-expanded="false" aria-controls="productsMenu">
           <span><i class="bi bi-box-seam me-2"></i> Products</span>
-          <i class="bi bi-chevron-down small toggle-icon"></i>
         </button>
         <div class="collapse {% if 'pcproducts' in app.request.get('_route') %}show{% endif %}" id="productsMenu">
+
           <a href="{{ path('app_pcproducts_index') }}"
              class="nav-link {% if app.request.get('_route') == 'app_pcproducts_index' %}active{% endif %}">
             <i class="bi bi-list-ul me-2"></i> Product List
           </a>
-          <a href="{{ path('app_pcproducts_new') }}"
-             class="nav-link {% if app.request.get('_route') == 'app_pcproducts_new' %}active{% endif %}">
-            <i class="bi bi-plus-circle me-2"></i> Add Product
-          </a>
-          <a href="{{ path('app_stocks_index') }}"
+          <a href="{{ path('app_stocks_index')}}"
              class="nav-link {% if app.request.get('_route') == 'app_stocks_index' %}active{% endif %}">
              <i class="bi bi-box-seam me-2"></i> Stocks
           </a>
@@ -62,6 +58,14 @@
            class="nav-link {% if app.request.get('_route') == 'app_users' %}active{% endif %}">
            <i class="bi bi-person-check me-2"></i> Users
         </a>
+      </li>
+
+      <!-- Audit Logs -->
+      <li class="nav-item">
+      <a href="{{ path('app_audit_log_index') }}"
+      class="nav-link {% if app.request.get('_route') == 'app_audit_log_index' %}active{% endif %}">
+      <i class="bi bi-clock-history me-2"></i> Audit Logs
+      </a>
       </li>
 
     </ul>

@@ -1,29 +1,46 @@
 <?php
+
 namespace App\Service;
 
+use App\Entity\AuditLog;
+use App\Enum\ActionType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class AuditLogger
 {
-    private $em;
+    public function __construct(
+        private EntityManagerInterface $em,
+        private Security $security
+    ) {}
 
-    public function __construct(EntityManagerInterface $em)
+    public function log(
+        string $entityName,
+        int $entityId,
+        ActionType $type,
+        ?array $oldData,
+        ?array $newData
+    ): void
     {
-        $this->em = $em;
-    }
+        $log = new AuditLog();
 
-    public function log(string $entityName, int $entityId, string $actionType, $oldData = null, $newData = null)
-    {
-        $conn = $this->em->getConnection();
+        $log->setEntityName($entityName);
+        $log->setEntityId($entityId);
+        $log->setActionType($type);
+
+        $log->setOldData($oldData);
+        $log->setNewData($newData);
+
         $user = $this->security->getUser();
+        $log->setChangedBy($user?->getId());
+        $log->setChangedAt(new \DateTimeImmutable());
 
-        $conn->insert('audit_log', [
-            'entity_name' => $entityName,
-            'entity_id' => $entityId,
-            'action_type' => $actionType,
-            'old_data' => $oldData ? json_encode($oldData) : null,
-            'new_data' => $newData ? json_encode($newData) : null,
-            'changed_by' => $user ? $user->getId() : null,
-        ]);
+        $this->em->getConnection()
+            ->executeStatement('ALTER TABLE audit_log AUTO_INCREMENT = 1');
+        $this->em->persist($log);
+        $this->em->flush();
     }
 }
+
+
+

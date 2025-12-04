@@ -46,7 +46,7 @@ class Pcproducts
 
     #[ORM\Column(nullable: true)]
     #[Assert\NotBlank(message: "Date cannot be empty.")]
-    private ?\DateTime $updatedat = null;
+    private ?\DateTimeImmutable $updatedat = null;
 
     #[ORM\Column]
     private ?bool $isavailable = null;
@@ -138,16 +138,17 @@ class Pcproducts
         return $this;
     }
 
-    public function getUpdatedat(): ?\DateTime
+    public function getUpdatedat(): ?\DateTimeImmutable
     {
         return $this->updatedat;
     }
 
-    public function setUpdatedat(\DateTime $updatedat): static
+    public function setUpdatedat(\DateTimeImmutable $updatedat): static
     {
         $this->updatedat = $updatedat;
         return $this;
     }
+
 
     public function isavailable(): ?bool
     {

@@ -29,3 +29,40 @@ $(document).ready(function() {
         });
     }
 });
+
+
+// ---- Roles warning + validation ----
+document.addEventListener('DOMContentLoaded', function () {
+    // For each user edit form
+    document.querySelectorAll('form[id^="form_user_"], form[id^="user_"]').forEach(function (form) {
+        const roleCheckboxes = form.querySelectorAll('input[type="checkbox"][name$="[roles][]"]');
+
+        if (!roleCheckboxes.length) {
+            return;
+        }
+
+        // 1) Warn if ROLE_USER is unchecked
+        roleCheckboxes.forEach(function (checkbox) {
+            checkbox.addEventListener('change', function () {
+                if (checkbox.value === 'ROLE_USER' && !checkbox.checked) {
+                    const ok = confirm(
+                        "Removing ROLE_USER is usually not recommended.\n\n" +
+                        "Do you really want to remove ROLE_USER from this account?"
+                    );
+                    if (!ok) {
+                        checkbox.checked = true; // revert change
+                    }
+                }
+            });
+        });
+
+        // 2) Prevent submit if no roles are selected
+        form.addEventListener('submit', function (e) {
+            const checked = Array.from(roleCheckboxes).filter(cb => cb.checked);
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert("User must have at least one role (e.g., ROLE_USER or ROLE_ADMIN).");
+            }
+        });
+    });
+});

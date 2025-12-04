@@ -4,3 +4,4 @@ import 'bootstrap';
 import 'datatables.net-bs5';
 
 window.$ = window.jquery = $;
+

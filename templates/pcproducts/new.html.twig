@@ -18,7 +18,7 @@
       <div class="d-flex justify-content-center mb-4">
         <div class="image-preview-card shadow-sm border rounded-3">
           <img id="imagePreview"
-               src="{{ asset('images/placeholder.png') }}"
+               src="{{ asset('bluecase.png') }}"
                alt="Image Preview"
                class="rounded-3" />
         </div>
@@ -29,7 +29,7 @@
       <!-- IMAGE INPUT -->
       <div class="mb-3">
         {{ form_label(form.image, 'Product Image', { 'label_attr': {'class': 'form-label fw-bold'} }) }}
-        {{ form_widget(form.image, { 'attr': {'class': 'form-control', 'accept': 'image/*'} }) }}
+        {{ form_widget(form.image, { 'attr': {'class': 'form-control', 'accept': 'image/*', 'id': 'pc_product_image'} }) }}
         {{ form_errors(form.image) }}
       </div>
 
@@ -97,47 +97,33 @@
 
       <!-- SUBMIT -->
       <div class="text-center mt-3">
-        <button type="submit" class="btn fw-semibold px-4 py-2"
-                style="background-color:#F88F6A; color:white; border:none; border-radius:6px; font-size:0.95rem;">
-          ➕ Add Product
-        </button>
+<button type="submit"
+        data-turbo="false"
+        class="btn fw-semibold px-4 py-2"
+        style="background-color:#F88F6A; color:white; border:none; border-radius:6px; font-size:0.95rem;">
+    ➕ Add Product
+</button>
+
       </div>
 
       {{ form_end(form) }}
 
       <!-- BACK LINK -->
       <div class="text-center mt-3">
-        <a href="{{ path('app_pcproducts_index') }}" class="fw-bold"
-           style="color:#2e2e2e; text-decoration:none;">
-          ← Back to Products
-        </a>
+<a href="{{ path('app_pcproducts_index') }}"
+   data-turbo="false"
+   class="fw-bold"
+   style="color:#2e2e2e; text-decoration:none;">
+    ← Back to Products
+</a>
+
       </div>
     </div>
   </div>
 </div>
+ {% endblock %}
 
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const input = document.querySelector('input[type="file"][name$="[image]"]');
-  const preview = document.getElementById('imagePreview');
-
-  if (input && preview) {
-    input.addEventListener('change', function(event) {
-      const file = event.target.files[0];
-      if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          preview.src = e.target.result;
-        }
-        reader.readAsDataURL(file);
-      } else {
-        preview.src = "{{ asset('images/placeholder.png') }}";
-      }
-    });
-  }
-});
-</script>
-
+{% block feature_javascripts %}
+    {{ encore_entry_script_tags('new') }}
 {% endblock %}
+

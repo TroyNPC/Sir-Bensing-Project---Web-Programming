@@ -9,6 +9,7 @@
 <div class="register-container">
     <div class="register-form-container">
         {{ form_start(registrationForm, {'attr': {'class': 'register-form'}}) }}
+            {{ form_errors(registrationForm) }}
             <h1 class="register-title">Register</h1>
             <div class="register-form-row">
                 <label for="username">Username</label>
@@ -18,6 +19,7 @@
             <div class="register-form-row">
                 <label for="password">Password</label>
                 {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.plainPassword) }}
             </div>
 
             <div class="register-form-check">
@@ -27,7 +29,7 @@
                 </label>
             </div>
 
-            <button type="submit" class="register-btn">Register</button>
+            <button type="submit" class="register-btn" data-turbo="false">Register</button>
             <div class="register-login-link">
             Already have an account? <a href="{{ path('app_login') }}">Sign in</a>
         </div>
@@ -35,4 +37,35 @@
         {{ form_end(registrationForm) }}
     </div>
 </div>
+
+{% endblock %}
+{% block feature_javascripts %}
+<script>
+document.querySelector('.register-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const form = this;
+
+
+    const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+
+
+    // Always replace modal content with returned HTML
+    const html = await response.text();
+
+
+    document.getElementById('modal-body').innerHTML = html;
+
+
+    // reopen modal (bootstrap example)
+    const modal = new bootstrap.Modal(document.getElementById('registerModal'));
+    modal.show();
+});
+</script>
+
 {% endblock %}

@@ -28,6 +28,9 @@ Encore
     .addEntry('booking', './assets/js/booking.js')
     .addEntry('adminlayout', './assets/js/adminlayout.js')
     .addEntry('customerproducts', './assets/js/customerproducts.js')
+    .addEntry('new', './assets/js/new.js')
+    .addEntry('auditlog', './assets/js/auditlog.js')
+    
 
 
 

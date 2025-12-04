@@ -1,10 +1,14 @@
 <?php
 
+
 namespace App\Enum;
+
 
 enum ActionType: string
 {
-    case ADD = 'add';
-    case EDIT = 'edit';
+    case CREATE = 'create';
+    case UPDATE = 'update';
     case DELETE = 'delete';
 }
+
+

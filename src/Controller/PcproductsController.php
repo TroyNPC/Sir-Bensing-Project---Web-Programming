@@ -6,6 +6,8 @@ use App\Entity\Pcproducts;
 use App\Entity\Stocks;
 use App\Form\PcproductsType;
 use App\Repository\PcproductsRepository;
+use App\Service\AuditLogger;
+use App\Enum\ActionType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +28,12 @@ final class PcproductsController extends AbstractController
     }
 
     #[Route('/new', name: 'app_pcproducts_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger,
+        AuditLogger $auditLogger
+    ): Response
     {
         $pcproduct = new Pcproducts();
         $form = $this->createForm(PcproductsType::class, $pcproduct);
@@ -65,24 +72,38 @@ final class PcproductsController extends AbstractController
             $entityManager->persist($pcproduct);
             $entityManager->flush();
 
+            // ✅ AUDIT — PRODUCT CREATE (FULL SNAPSHOT)
+        $auditLogger->log(
+            Pcproducts::class,
+            $pcproduct->getId(),
+            ActionType::CREATE,
+            null,
+            [
+                'product_name' => $pcproduct->getName(),
+                'brand'        => $pcproduct->getBrand(),
+                'category'     => $pcproduct->getCategory(),
+                'price'        => $pcproduct->getPrice(),
+                'description'  => $pcproduct->getDescription(),
+                'image'        => $pcproduct->getImage(),
+                'available'    => $pcproduct->isavailable(),
+            ]
+        );
             // ✅ Automatically create a new Stock record for this product
             $stock = new Stocks();
             $stock->setProductname($pcproduct);
-            $stock->setStock(1); // Default stock 1
+            $stock->setStock(1);
             $stock->setImage($pcproduct->getImage());
             $stock->setCreatedAt(new \DateTimeImmutable());
-             $stock->setUpdatedAt(new \DateTimeImmutable());
+            $stock->setUpdatedAt(new \DateTimeImmutable());
 
             $maxStockId = $connection->fetchOne('SELECT MAX(id) FROM stocks');
             $nextStockId = ((int)$maxStockId) + 1;
             $connection->executeStatement('ALTER TABLE stocks AUTO_INCREMENT = ' . $nextStockId);
 
-
             // ✅ Persist stock
             $entityManager->persist($stock);
             $entityManager->flush();
 
-            // ✅ Flash success message
             $this->addFlash('success', '✅ Product added successfully and stock record created!');
 
             return $this->redirectToRoute('app_pcproducts_index');
@@ -94,7 +115,6 @@ final class PcproductsController extends AbstractController
         ]);
     }
 
-    // ✅ Regular full-page "Show"
     #[Route('/{id}', name: 'app_pcproducts_show', methods: ['GET'])]
     public function show(Pcproducts $pcproduct): Response
     {
@@ -103,7 +123,6 @@ final class PcproductsController extends AbstractController
         ]);
     }
 
-    // ✅ Modal-friendly "Show" route (for AJAX modal loading)
     #[Route('/{id}/modal', name: 'app_pcproducts_show_modal', methods: ['GET'])]
     public function showModal(Pcproducts $pcproduct): Response
     {
@@ -114,18 +133,35 @@ final class PcproductsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_pcproducts_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Pcproducts $pcproduct, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function edit(
+        Request $request,
+        Pcproducts $pcproduct,
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger,
+        AuditLogger $auditLogger
+    ): Response
     {
         $form = $this->createForm(PcproductsType::class, $pcproduct);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // ✅ SNAPSHOT OLD VALUES (FULL TRACKING)
+            $oldData = [
+                'product_name' => $pcproduct->getName(),
+                'brand'        => $pcproduct->getBrand(),
+                'category'     => $pcproduct->getCategory(),
+                'price'        => $pcproduct->getPrice(),
+                'description'  => $pcproduct->getDescription(),
+                'image'        => $pcproduct->getImage(),
+                'available'    => $pcproduct->isavailable(),
+            ];
+
             $pcproduct->setUpdatedAt(new \DateTimeImmutable());
-            // ✅ Handle availability change (true/false)
+
             $isAvailable = $form->get('isavailable')->getData();
             $pcproduct->setIsavailable($isAvailable);
 
-            // ✅ Handle new image upload only if a new file is selected
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -138,7 +174,6 @@ final class PcproductsController extends AbstractController
                         $newFilename
                     );
 
-                    // 🧹 Delete old image if exists
                     $oldImage = $pcproduct->getImage();
                     if ($oldImage && file_exists($this->getParameter('products_images_directory') . '/' . $oldImage)) {
                         @unlink($this->getParameter('products_images_directory') . '/' . $oldImage);
@@ -150,8 +185,39 @@ final class PcproductsController extends AbstractController
                 }
             }
 
-            // ✅ Save updated product (including isavailable)
+            // ✅ Save updated product
             $entityManager->flush();
+
+            // ✅ SNAPSHOT NEW VALUES
+            $newData = [
+                'product_name' => $pcproduct->getName(),
+                'brand'        => $pcproduct->getBrand(),
+                'category'     => $pcproduct->getCategory(),
+                'price'        => $pcproduct->getPrice(),
+                'description'  => $pcproduct->getDescription(),
+                'image'        => $pcproduct->getImage(),
+                'available'    => $pcproduct->isavailable(),
+            ];
+
+            // ✅ FILTER UNCHANGED FIELDS
+            $cleanOld = [];
+            $cleanNew = [];
+
+            foreach ($oldData as $key => $oldValue) {
+                if ($oldValue !== $newData[$key]) {
+                    $cleanOld[$key] = $oldValue;
+                    $cleanNew[$key] = $newData[$key];
+                }
+            }
+
+            // ✅ AUDIT — PRODUCT UPDATE (COMPLETE DIFF)
+            $auditLogger->log(
+                Pcproducts::class,
+                $pcproduct->getId(),
+                ActionType::UPDATE,
+                $cleanOld ?: null,
+                $cleanNew ?: null
+            );
 
             $this->addFlash('success', '✅ Product updated successfully!');
             return $this->redirectToRoute('app_pcproducts_index');
@@ -164,7 +230,13 @@ final class PcproductsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_pcproducts_delete', methods: ['POST'])]
-    public function delete(Request $request, EntityManagerInterface $entityManager, PcproductsRepository $repo, int $id): Response
+    public function delete(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        PcproductsRepository $repo,
+        int $id,
+        AuditLogger $auditLogger
+    ): Response
     {
         $pcproduct = $repo->find($id);
 
@@ -175,22 +247,35 @@ final class PcproductsController extends AbstractController
 
         if ($this->isCsrfTokenValid('delete' . $pcproduct->getId(), $request->getPayload()->getString('_token'))) {
 
-            // 🧹 Delete image from filesystem if exists
             $oldImage = $pcproduct->getImage();
             if ($oldImage && file_exists($this->getParameter('products_images_directory') . '/' . $oldImage)) {
                 @unlink($this->getParameter('products_images_directory') . '/' . $oldImage);
             }
 
-            // 🗑️ Remove product
+            $deletedID = $pcproduct->getId();
+
+            // ✅ Remove product
             $entityManager->remove($pcproduct);
             $entityManager->flush();
 
-            // 🧮 Adjust AUTO_INCREMENT based on the highest ID after deletion
+            // ✅ AUDIT — PRODUCT DELETE (UNCHANGED)
+            $auditLogger->log(
+                Pcproducts::class,
+                $deletedID,
+                ActionType::DELETE,
+                ['deleted' => true],
+                null
+            );
+
             $maxId = $entityManager->getConnection()
                 ->fetchOne('SELECT MAX(id) FROM pcproducts');
+
             $nextId = $maxId ? $maxId + 1 : 1;
+
             $entityManager->getConnection()
-                ->executeStatement('ALTER TABLE pcproducts AUTO_INCREMENT = ' . $nextId);
+                ->executeStatement(
+                    'ALTER TABLE pcproducts AUTO_INCREMENT = ' . $nextId
+                );
 
             $this->addFlash('success', '🗑️ Product deleted successfully!');
         }
@@ -198,3 +283,6 @@ final class PcproductsController extends AbstractController
         return $this->redirectToRoute('app_pcproducts_index');
     }
 }
+
+
+
