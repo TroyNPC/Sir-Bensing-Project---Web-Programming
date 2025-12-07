@@ -1,12 +1,23 @@
 {% extends 'headerfooter.html.twig' %}
 
+
 {% block title %}Nexuscore | New Service Booking{% endblock %}
 
+
 {% block body %}
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <strong>✅ Success!</strong> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endfor %}
+
 
 {% block Stylesheet %}
 <link rel="stylesheet" href="{{ asset('Arrangestyle/projects/customerservicebooking.css') }}">
 {% endblock %}
+
 
 <!-- Page Header -->
 <section class="text-center py-5" style="background: #f5f5f5;">
@@ -16,6 +27,7 @@
   </div>
 </section>
 
+
 <!-- Service Booking Form -->
 <section class="py-5">
   <div class="container">
@@ -23,11 +35,29 @@
       <div class="card-body">
         {{ form_start(form, {'attr': {'id': 'serviceBookingForm'}}) }}
 
+
         <div class="mb-3">
           {{ form_label(form.customerName) }}
           {{ form_widget(form.customerName, {'attr': {'class': 'form-control'}}) }}
           {{ form_errors(form.customerName) }}
         </div>
+
+
+        <!-- ✅ NEW FIELD -->
+        <div class="mb-3">
+          {{ form_label(form.contactNumber) }}
+          {{ form_widget(form.contactNumber, {'attr': {'class': 'form-control'}}) }}
+          {{ form_errors(form.contactNumber) }}
+        </div>
+
+
+        <!-- ✅ NEW FIELD -->
+        <div class="mb-3">
+          {{ form_label(form.emailAddress) }}
+          {{ form_widget(form.emailAddress, {'attr': {'class': 'form-control'}}) }}
+          {{ form_errors(form.emailAddress) }}
+        </div>
+
 
         <div class="mb-3">
           {{ form_label(form.serviceType) }}
@@ -35,11 +65,20 @@
           {{ form_errors(form.serviceType) }}
         </div>
 
+
         <div class="mb-3">
           {{ form_label(form.advisercategory) }}
           {{ form_widget(form.advisercategory, {'attr': {'class': 'form-control'}}) }}
           {{ form_errors(form.advisercategory) }}
         </div>
+
+
+        <div class="mb-3">
+          {{ form_label(form.staff) }}
+          {{ form_widget(form.staff, {'attr': {'class': 'form-control'}}) }}
+          {{ form_errors(form.staff) }}
+        </div>
+
 
         <div class="mb-3">
           {{ form_label(form.preferredDate) }}
@@ -47,22 +86,26 @@
           {{ form_errors(form.preferredDate) }}
         </div>
 
+
         <div class="mb-3">
           {{ form_label(form.notes) }}
           {{ form_widget(form.notes, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
           {{ form_errors(form.notes) }}
         </div>
 
+
         <div class="d-flex justify-content-between mt-4">
-          <a href="{{ path('app_servicebooking_index') }}" class="btn btn-secondary">Back to List</a>
-          <button type="submit" class="btn btn-orange">Create Booking</button>
+          <a href="{{ path('app_servicebooking_index') }}" class="btn btn-secondary" data-turbo = "false">Back to List</a>
+          <button type="submit" class="btn btn-orange" data-turbo="false">Create Booking</button>
         </div>
+
 
         {{ form_end(form) }}
       </div>
     </div>
   </div>
 </section>
+
 
 <!-- Flash message alert -->
 {% for message in app.flashes('success') %}
@@ -71,4 +114,11 @@
   </script>
 {% endfor %}
 
+
 {% endblock %}
+
+
+
+
+
+

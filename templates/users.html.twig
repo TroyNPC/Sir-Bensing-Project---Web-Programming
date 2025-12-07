@@ -1,4 +1,4 @@
-{% extends 'adminlayout.html.twig' %}
+{% extends 'layout.html.twig' %}
 
 
 {% block title %}Users{% endblock %}
@@ -27,15 +27,19 @@
     </div>
 
 
-        {% for label, messages in app.flashes %}
+    {% for label, messages in app.flashes %}
         {% for message in messages %}
             <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" data-turbo="false"></button>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"
+                        data-turbo="false">
+                </button>
             </div>
         {% endfor %}
     {% endfor %}
-
 
 
     <div class="card border-0 shadow-sm rounded-4 mx-1">
@@ -46,39 +50,80 @@
                         <tr class="text-center">
                             <th width="8%">ID</th>
                             <th width="20%">Username</th>
-                            <th width="25%">Roles</th>
-                            <th width="30%">Password (Hashed)</th>
-                            <th width="17%">Actions</th>
+                            <th width="20%">Roles</th>
+                            <th width="12%">Status</th>
+                            <th width="25%">Password (Hashed)</th>
+                            <th width="15%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+
+
                     {% if users|length > 0 %}
                         {% for user in users %}
+                            {% set isSelf = app.user and user.id == app.user.id %}
+
                             <tr class="text-center">
                                 <td>{{ user.id }}</td>
+
+
                                 <td>{{ user.username }}</td>
+
+
                                 <td>
                                     {% for role in user.roles %}
                                         <span class="badge bg-secondary">{{ role }}</span>
                                     {% endfor %}
                                 </td>
+
+
+                                {# ✅ STATUS COLUMN #}
+                                <td>
+                                    {% if user.isEnabled %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+
+
                                 <td class="text-muted password-cell" title="{{ user.password }}">
                                     {{ user.password|length > 25 ? user.password|slice(0,25) ~ '...' : user.password }}
                                 </td>
+
+
                                 <td>
-                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <div class="d-flex align-items-center justify-content-center gap-1 flex-nowrap">
+
+
                                         <button class="btn btn-sm fw-semibold"
-                                                style="background-color:#2e2e2e; color:white; border-radius:6px; padding: 6px 12px;"
+                                                style="background-color:#2e2e2e; color:white; border-radius:6px; padding: 3px 12px;"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editUserModal{{ user.id }}">
                                             Edit
                                         </button>
+
+
                                         <button class="btn btn-sm fw-semibold"
-                                                style="background-color:#dc3545; color:white; border-radius:6px; padding: 6px 12px;"
+                                                style="background-color:#dc3545; color:white; border-radius:6px; padding: 3px 8px;"
                                                 data-bs-toggle="modal"
+                                                {% if isSelf %}disabled style="opacity:.4;cursor:not-allowed"{% endif %}
                                                 data-bs-target="#deleteUserModal{{ user.id }}">
                                             Delete
                                         </button>
+
+
+                                        {# ✅ TOGGLE BUTTON → OPENS MODAL #}
+                                        <button type="button"
+                                                class="btn btn-sm fw-semibold {{ user.isEnabled ? 'btn-danger' : 'btn-success' }}"
+                                                style="border-radius:6px; padding: 3px 8px;"
+                                                data-bs-toggle="modal"
+                                                {% if isSelf %}disabled style="opacity:.4;cursor:not-allowed"{% endif %}
+                                                data-bs-target="#toggleUserModal{{ user.id }}">
+                                            {{ user.isEnabled ? 'Disable' : 'Enable' }}
+                                        </button>
+
+
                                     </div>
                                 </td>
                             </tr>
@@ -96,10 +141,10 @@
                                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body p-4">
-                                                {{ form_start(userForms[user.id], {attr: {'data-turbo': 'false'}})}}
+                                                {{ form_start(userForms[user.id], { attr: { 'data-turbo': 'false', 'class': 'force-refresh' } })}}
+                                                    {{ form_errors(userForms[user.id])}}
 
 
-                                                    {# 🔹 IDENTIFY THIS AS EDIT FOR USER.ID #}
                                                     <input type="hidden" name="context" value="edit_{{ user.id }}">
 
 
@@ -107,15 +152,25 @@
                                                         <label class="fw-semibold">Username</label>
                                                         {{ form_widget(userForms[user.id].username, { 'attr': {'class':'form-control shadow-sm'} }) }}
                                                     </div>
+
+
                                                     <div class="mb-3">
                                                         <label class="fw-semibold">Roles</label>
-                                                        {{ form_widget(userForms[user.id].roles) }}
+                                                        <div class="roles-field">
+                                                            {{ form_widget(userForms[user.id].roles) }}
+                                                        </div>
                                                     </div>
+
+
                                                     <div class="mb-3">
                                                         <label class="fw-semibold">New Password (leave blank to keep current)</label>
                                                         {{ form_widget(userForms[user.id].plainPassword, { 'attr': {'class':'form-control shadow-sm'} }) }}
                                                     </div>
-                                                    <button type="submit" class="btn btn-success">Save Changes</button>
+
+
+                                                    <button type="submit" class="btn btn-success" data-turbo='false'>
+                                                        Save Changes
+                                                    </button>
                                                 {{ form_end(userForms[user.id]) }}
                                             </div>
                                         </div>
@@ -141,8 +196,54 @@
                                                 <form method="post"
                                                       action="{{ path('app_users_delete', {'id': user.id}) }}"
                                                       onsubmit="return confirmDelete({{ app.user.id }}, {{ user.id }});">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete-user' ~ user.id) }}">
-                                                    <button type="submit" class="btn btn-danger" data-turbo="false">Delete</button>
+                                                    <input type="hidden"
+                                                           name="_token"
+                                                           value="{{ csrf_token('delete-user' ~ user.id) }}">
+                                                    <button type="submit"
+                                                            class="btn btn-danger"
+                                                            data-turbo="false">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            {# ✅ TOGGLE ENABLE/DISABLE MODAL #}
+                            <div class="modal fade" id="toggleUserModal{{ user.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm modal-dialog-centered">
+                                    <div class="modal-content border-0 rounded-4 shadow-lg">
+                                        <div class="modal-header {{ user.isEnabled ? 'bg-danger' : 'bg-success' }} text-white">
+                                            <h5 class="modal-title">
+                                                {{ user.isEnabled ? 'Disable User #' ~ user.id : 'Enable User #' ~ user.id }}
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body p-4">
+                                            <p>
+                                                Are you sure you want to
+                                                <strong>{{ user.isEnabled ? 'disable' : 'enable' }}</strong>
+                                                the account <strong>{{ user.username }}</strong>?
+                                            </p>
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <button type="button"
+                                                        class="btn btn-secondary btn-sm"
+                                                        data-bs-dismiss="modal">
+                                                    Cancel
+                                                </button>
+                                                <form method="post"
+                                                      action="{{ path('app_users_toggle', {'id': user.id}) }}"
+                                                      data-turbo="false">
+                                                    <input type="hidden"
+                                                           name="_token"
+                                                           value="{{ csrf_token('toggle-user' ~ user.id) }}">
+                                                    <button type="submit"
+                                                            class="btn btn-sm fw-semibold {{ user.isEnabled ? 'btn-danger' : 'btn-success' }}">
+                                                        {{ user.isEnabled ? 'Yes, disable' : 'Yes, enable' }}
+                                                    </button>
                                                 </form>
                                             </div>
                                         </div>
@@ -154,9 +255,13 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No users found</td>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No users found
+                            </td>
                         </tr>
                     {% endif %}
+
+
                     </tbody>
                 </table>
             </div>
@@ -165,7 +270,7 @@
 </div>
 
 
-{# ADD USER MODAL #}
+{# ADD USER MODAL (unchanged) #}
 <div class="modal fade" id="addUserModal" tabindex="-1">
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow-lg">
@@ -178,7 +283,6 @@
                     {{ form_start(addForm, {attr: {'data-turbo': 'false'}}) }}
 
 
-                        {# 🔹 IDENTIFY THIS AS THE ADD FORM #}
                         <input type="hidden" name="context" value="add">
 
 
@@ -186,18 +290,32 @@
                             <label class="fw-semibold">Username</label>
                             {{ form_widget(addForm.username, { 'attr': {'class':'form-control shadow-sm'} }) }}
                         </div>
+
+
                         <div class="mb-3">
                             <label class="fw-semibold">Roles</label>
-                            {{ form_widget(addForm.roles) }}
+                            <div class="roles-field">
+                                {{ form_widget(addForm.roles) }}
+                            </div>
                         </div>
+
+
                         <div class="mb-3">
                             <label class="fw-semibold">Password</label>
                             {{ form_widget(addForm.plainPassword, { 'attr': {'class':'form-control shadow-sm'} }) }}
                         </div>
-                        <button type="submit" class="btn btn-success" data-turbo="false">Add User</button>
+
+
+                        <button type="submit" class="btn btn-success" data-turbo="false">
+                            Add User
+                        </button>
+
+
                     {{ form_end(addForm) }}
                 {% else %}
-                    <p class="text-danger mb-0">Add form is not available.</p>
+                    <p class="text-danger mb-0">
+                        Add form is not available.
+                    </p>
                 {% endif %}
             </div>
         </div>
@@ -211,11 +329,8 @@
 {% block javascripts %}
 {{ parent() }}
 {{ encore_entry_script_tags('user') }}
-
-
-<script>
-</script>
 {% endblock %}
+
 
 
 

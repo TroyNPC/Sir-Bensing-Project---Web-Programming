@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}WalkinOrders index{% endblock %}
+
+{% block body %}
+    <h1>WalkinOrders index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>BuyerName</th>
+                <th>Contact</th>
+                <th>PaymentMethod</th>
+                <th>PaymentStatus</th>
+                <th>Quantity</th>
+                <th>WarrantyText</th>
+                <th>PurchaseDate</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for walkin_order in walkin_orders %}
+            <tr>
+                <td>{{ walkin_order.id }}</td>
+                <td>{{ walkin_order.buyerName }}</td>
+                <td>{{ walkin_order.contact }}</td>
+                <td>{{ walkin_order.paymentMethod }}</td>
+                <td>{{ walkin_order.paymentStatus }}</td>
+                <td>{{ walkin_order.quantity }}</td>
+                <td>{{ walkin_order.warrantyText }}</td>
+                <td>{{ walkin_order.purchaseDate ? walkin_order.purchaseDate|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_walkin_orders_show', {'id': walkin_order.id}) }}">show</a>
+                    <a href="{{ path('app_walkin_orders_edit', {'id': walkin_order.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_walkin_orders_new') }}">Create new</a>
+{% endblock %}

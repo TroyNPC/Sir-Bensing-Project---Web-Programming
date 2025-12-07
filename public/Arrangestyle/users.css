@@ -59,3 +59,9 @@
 .table-responsive {
     overflow-x: auto;
 }
+.roles-field label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 18px;
+}

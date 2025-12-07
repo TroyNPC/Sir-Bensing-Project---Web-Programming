@@ -18,7 +18,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $username = null;
 
     /**
@@ -50,6 +50,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $isEnabled = true;
+
+
+    public function isEnabled(): bool
+    {
+        return $this->isEnabled;
+    }
+
+
+    public function setIsEnabled(bool $isEnabled): self
+    {
+        $this->isEnabled = $isEnabled;
+        return $this;
+    }
     /**
      * A visual identifier that represents this user.
      *

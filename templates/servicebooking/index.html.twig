@@ -1,134 +1,319 @@
-{% extends 'adminlayout.html.twig' %}
+{% extends 'layout.html.twig' %}
 
-{% block title %}Servicebooking Index{% endblock %}
+
+{% block title %}Service Booking Index{% endblock %}
+
 
 {% block feature_stylesheets %}
     <link rel="stylesheet" href="{{ asset('Arrangestyle/servicebooking/servicebooking.css') }}">
 {% endblock %}
 
+
 {% block feature_javascripts %}
     {{ encore_entry_script_tags('booking') }}
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+
+    // ✅ Show success modal
+    const successModal = document.getElementById('successModal');
+    if (successModal) {
+        new bootstrap.Modal(successModal).show();
+    }
+
+
+    // ✅ Show danger modal
+    const dangerModal = document.getElementById('dangerModal');
+    if (dangerModal) {
+        new bootstrap.Modal(dangerModal).show();
+    }
+
+
+});
+</script>
 {% endblock %}
 
 
-
-
-
 {% block content %}
-<div class="container-fluid py-5">
+{# =============================
+   FLASH MODALS
+============================= #}
 
+
+{% set successMessages = app.flashes('success') %}
+{% set dangerMessages = app.flashes('danger') %}
+
+
+{# ===== SUCCESS MODAL ===== #}
+{% if successMessages is not empty %}
+<div class="modal fade" id="successModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">✅ Success</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% for message in successMessages %}
+          <p class="mb-2">{{ message }}</p>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+
+
+{# ===== DANGER MODAL ===== #}
+{% if dangerMessages is not empty %}
+<div class="modal fade" id="dangerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">❌ Error</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% for message in dangerMessages %}
+          <p class="mb-2">{{ message }}</p>
+        {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+<div class="container-fluid py-5">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
         <h3 class="fw-bold mb-0" style="color:#2e2e2e;">📋 Service Booking List</h3>
     </div>
 
+
     <!-- Table -->
     <div class="card border-0 shadow-sm rounded-4 mx-1">
         <div class="card-body p-0">
             <div class="table-responsive table-scroll">
-                <table id="servicebookingTable" class="table table-hover table-bordered align-middle mb-0" style="min-width:1400px;">
+
+
+                <!-- ✅ REQUIRED for DataTables JS -->
+                <table id="servicebookingTable"
+                       class="table table-hover table-bordered align-middle mb-0"
+                       style="min-width:1800px;">
+
+
                     <thead style="background-color:#F88F6A; color:white;">
                         <tr class="text-center">
-                            <th class="fw-bold">ID</th>
-                            <th class="fw-bold">Customer Name</th>
-                            <th class="fw-bold">Service Type</th>
-                            <th class="fw-bold">Adviser Category</th>
-                            <th class="fw-bold">Preferred Date</th>
-                            <th class="fw-bold">Notes</th>
-                            <th class="fw-bold">Created At</th>
-                            <th class="fw-bold">Actions</th>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Service</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Notes</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
+
+
                     <tbody>
                         {% for servicebooking in servicebookings %}
                         <tr>
-                            <td class="text-center">{{ servicebooking.id }}</td>
-                            <td class="text-center">{{ servicebooking.customername }}</td>
+
+
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td class="text-center">{{ servicebooking.customerName }}</td>
+                            <td class="text-center">{{ servicebooking.contactNumber }}</td>
+                            <td class="text-center">{{ servicebooking.emailAddress }}</td>
                             <td class="text-center">{{ servicebooking.serviceType }}</td>
                             <td class="text-center">{{ servicebooking.advisercategory }}</td>
                             <td class="text-center">
-                                {{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : '' }}
-                            </td>
-                            <td class="text-center">{{ servicebooking.notes }}</td>
-                            <td class="text-center">
-                                {{ servicebooking.getCreatedAt() ? servicebooking.getCreatedAt()|date('Y-m-d H:i:s') : '' }}
+                                {{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i') : '' }}
                             </td>
                             <td class="text-center">
+                                {{ servicebooking.notes ?? '-' }}
+                            </td>
+                            <td class="text-center">
+                                {{ servicebooking.createdAt|date('Y-m-d H:i') }}
+                            </td>
+
+
+                            <!-- ✅ STATUS PILL -->
+                            <td class="text-center">
+                                {% if servicebooking.status == 'completed' %}
+                                    <span class="badge rounded-pill px-3 bg-success">Completed</span>
+                                {% elseif servicebooking.status == 'paused' %}
+                                    <span class="badge rounded-pill px-3 bg-danger">Paused</span>
+                                {% else %}
+                                    <span class="badge rounded-pill px-3 bg-warning text-dark">Ongoing</span>
+                                {% endif %}
+                            </td>
+
+
+                            <td class="text-center">
+
+
                                 <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                    <button type="button"
-                                            class="btn btn-sm fw-semibold"
-                                            style="background-color:#F88F6A; color:white; border-radius:6px;"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#showModal{{ servicebooking.id }}">
+
+
+                                    <button
+                                        class="btn btn-sm"
+                                        style="background-color:#F88F6A;color:#fff"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#showModal{{ servicebooking.id }}">
                                         Show
                                     </button>
 
-                                    <button type="button"
-                                            class="btn btn-sm fw-semibold"
-                                            style="background-color:#2e2e2e; color:white; border-radius:6px;"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editModal{{ servicebooking.id }}">
+
+                                    <button
+                                        class="btn btn-sm text-white"
+                                        style="background-color:#2e2e2e"
+                                        data-bs-toggle="modal"
+                                        data-turbo="false"
+                                        data-bs-target="#editModal{{ servicebooking.id }}">
                                         Edit
                                     </button>
 
-                                    {{ include('servicebooking/_delete_form.html.twig', { servicebooking : servicebooking }) }}
+
+                                    {{ include('servicebooking/_delete_form.html.twig', { servicebooking: servicebooking }) }}
+
+
                                 </div>
+
+
                             </td>
                         </tr>
 
-                        <!-- SHOW MODAL -->
-                        <div class="modal fade" id="showModal{{ servicebooking.id }}" tabindex="-1" aria-hidden="true">
+
+                        <!-- ============================
+                             ✅ SHOW MODAL
+                        ============================ -->
+                        <div class="modal fade"
+                             id="showModal{{ servicebooking.id }}"
+                             tabindex="-1">
+
+
                             <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content border-0 rounded-4 shadow-lg">
-                                    <div class="modal-header" style="background-color:#F88F6A; color:white;">
-                                        <h5 class="modal-title fw-semibold">Booking #{{ servicebooking.id }}</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                <div class="modal-content shadow-lg">
+
+
+                                    <div class="modal-header bg-orange text-white">
+                                        <h5 class="modal-title">Service Booking Details</h5>
+                                        <button class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal">
+                                        </button>
                                     </div>
-                                    <div class="modal-body p-4">
-                                        <ul class="list-unstyled mb-3">
-                                            <li><strong class="text-secondary">Service Type:</strong> {{ servicebooking.serviceType }}</li>
-                                            <li><strong class="text-secondary">Adviser Category:</strong> {{ servicebooking.advisercategory }}</li>
-                                            <li><strong class="text-secondary">Preferred Date:</strong> {{ servicebooking.preferredDate ? servicebooking.preferredDate|date('Y-m-d H:i:s') : 'N/A' }}</li>
-                                            <li><strong class="text-secondary">Notes:</strong> {{ servicebooking.notes ?? 'No notes' }}</li>
-                                            <li><strong class="text-secondary">Created At:</strong> {{ servicebooking.getCreatedAt() ? servicebooking.getCreatedAt()|date('Y-m-d H:i:s') : 'N/A' }}</li>
-                                            <li><strong class="text-secondary">Customer Name:</strong> {{ servicebooking.customerName }}</li>
-                                        </ul>
+
+
+                                    <div class="modal-body">
+
+
+                                        <p><strong>Customer:</strong> {{ servicebooking.customerName }}</p>
+                                        <p><strong>Contact:</strong> {{ servicebooking.contactNumber }}</p>
+                                        <p><strong>Email:</strong> {{ servicebooking.emailAddress }}</p>
+                                        <p><strong>Service:</strong> {{ servicebooking.serviceType }}</p>
+                                        <p><strong>Category:</strong> {{ servicebooking.advisercategory }}</p>
+                                        <p><strong>Date:</strong>
+                                            {{ servicebooking.preferredDate|date('Y-m-d H:i') }}
+                                        </p>
+                                        <p><strong>Notes:</strong>
+                                            {{ servicebooking.notes ?? '-' }}
+                                        </p>
+                                        <p><strong>Staff:</strong>
+                                            {{ servicebooking.staff ? servicebooking.staff.username : 'Unassigned' }}
+                                        </p>
+
+
+                                        <p><strong>Status:</strong>
+                                            {% if servicebooking.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elseif servicebooking.status == 'paused' %}
+                                                <span class="badge bg-danger">Paused</span>
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">Ongoing</span>
+                                            {% endif %}
+                                        </p>
+
+
                                     </div>
+
+
                                 </div>
                             </div>
                         </div>
 
-                        <!-- EDIT MODAL -->
-                        <div class="modal fade" id="editModal{{ servicebooking.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal fade"
+                             id="editModal{{ servicebooking.id }}"
+                             tabindex="-1">
+
+
                             <div class="modal-dialog modal-lg modal-dialog-centered">
-                                <div class="modal-content border-0 rounded-4 shadow-lg">
-                                    <div class="modal-header" style="background-color:#2e2e2e; color:white;">
-                                        <h5 class="modal-title fw-semibold">Edit Booking #{{ servicebooking.id }}</h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                <div class="modal-content shadow-lg">
+
+
+                                    <div class="modal-header bg-dark text-white">
+                                        <h5>Edit Booking</h5>
+                                        <button class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal"></button>
                                     </div>
-                                    <div class="modal-body p-4" id="editModalBody{{ servicebooking.id }}">
-                                        <div class="text-center text-muted py-3">
-                                            <div class="spinner-border text-dark" role="status"></div>
-                                            <p class="mt-2 mb-0 small">Loading form...</p>
+
+
+                                    <!-- ⚠️ REQUIRED BY JS -->
+                                    <div
+                                        class="modal-body"
+                                        id="editModalBody{{ servicebooking.id }}">
+
+
+                                        <div class="text-center text-muted py-4">
+                                            <div class="spinner-border"></div>
+                                            <p class="mt-2">Loading form...</p>
                                         </div>
+
+
                                     </div>
+
+
                                 </div>
                             </div>
                         </div>
+
+
+
 
                         {% else %}
                         <tr>
-                            {# 8 columns in thead → colspan 8 here #}
-                            <td colspan="8" class="text-center text-muted py-4">No records found</td>
+                            <td colspan="11"
+                                class="text-center py-4 text-muted">
+                                No records found
+                            </td>
                         </tr>
                         {% endfor %}
+
+
                     </tbody>
                 </table>
+
+
             </div>
         </div>
     </div>
+
+
 </div>
 {% endblock %}
+
+
+
 
 
 

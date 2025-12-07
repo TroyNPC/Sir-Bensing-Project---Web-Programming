@@ -16,10 +16,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-
-
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+
+
+/* ✅ ADDED */
+use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;
 
 
 class UserController extends AbstractController
@@ -49,14 +53,15 @@ class UserController extends AbstractController
             ->add('roles', ChoiceType::class, [
                 'choices' => [
                     'User'  => 'ROLE_USER',
-                    'Admin' => 'ROLE_ADMIN'
+                    'Admin' => 'ROLE_ADMIN',
+                    'Staff' => 'ROLE_STAFF'
                 ],
                 'multiple' => true,
                 'expanded' => true
             ])
             ->add('plainPassword', PasswordType::class, [
-                'mapped' => false,
-                'required' => true
+                'mapped'  => false,
+                'required'=> true
             ])
             ->getForm();
 
@@ -64,7 +69,6 @@ class UserController extends AbstractController
         $addForm->handleRequest($request);
 
 
-        // ✅ handle ONLY when context == add
         if ($context === 'add' && $addForm->isSubmitted() && $addForm->isValid()) {
 
 
@@ -74,41 +78,35 @@ class UserController extends AbstractController
             $password = $addForm->get('plainPassword')->getData();
 
 
-            $existing = $em->getRepository(User::class)->findOneBy(['username' => $username]);
+            $existing = $em->getRepository(User::class)
+                           ->findOneBy(['username' => $username]);
 
 
             if ($existing) {
 
 
-                // ⛔ Prevent self-add override
                 if ($this->getUser() && $existing->getId() === $this->getUser()->getId()) {
-                    $this->addFlash(
-                        'danger',
+                    $this->addFlash('danger',
                         'Account Already Exists - You cannot update your own account using the Add User form.'
                     );
                     return $this->redirectToRoute('app_users');
                 }
 
 
-                // ✅ SNAPSHOT OLD
                 $oldData = [
                     'username' => $existing->getUsername(),
                     'roles'    => $existing->getRoles(),
                 ];
 
 
-                // Update existing user
                 $existing->setRoles($roles);
                 $existing->setPassword($hasher->hashPassword($existing, $password));
 
 
                 try {
-
-
                     $em->flush();
 
 
-                    // ✅ SNAPSHOT NEW (password changed)
                     $newData = [
                         'username' => $existing->getUsername(),
                         'roles'    => $existing->getRoles(),
@@ -116,9 +114,7 @@ class UserController extends AbstractController
                     ];
 
 
-                    // ✅ AUDIT — USER UPDATE (via ADD form)
                     $auditLogger->log(
-                        User::class,
                         $existing->getId(),
                         ActionType::UPDATE,
                         $oldData,
@@ -135,198 +131,284 @@ class UserController extends AbstractController
 
 
                 return $this->redirectToRoute('app_users');
+            }
 
 
-            } else {
+            $connection = $em->getConnection();
+            $maxId  = $connection->fetchOne('SELECT MAX(id) FROM user');
+            $nextId = $maxId ? ((int)$maxId + 1) : 1;
+            $connection->executeStatement('ALTER TABLE user AUTO_INCREMENT = ' . $nextId);
 
 
-                // ✅ AUTO-FIX USER AUTO_INCREMENT
-                $connection = $em->getConnection();
-                $maxId = $connection->fetchOne('SELECT MAX(id) FROM user');
-                $nextId = $maxId ? ((int)$maxId + 1) : 1;
-                $connection->executeStatement('ALTER TABLE user AUTO_INCREMENT = ' . $nextId);
+            $newUser = new User();
+            $newUser->setUsername($username);
+            $newUser->setRoles($roles);
+            $newUser->setPassword(
+                $hasher->hashPassword($newUser, $password)
+            );
 
 
-                // Create new user
-                $newUser = new User();
-                $newUser->setUsername($username);
-                $newUser->setRoles($roles);
-                $newUser->setPassword($hasher->hashPassword($newUser, $password));
+            try {
+                $em->persist($newUser);
+                $em->flush();
 
 
-                try {
+                $auditLogger->log(
+                    $newUser->getId(),
+                    ActionType::CREATE,
+                    null,
+                    [
+                        'username' => $newUser->getUsername(),
+                        'roles'    => $newUser->getRoles(),
+                        'password' => 'added',
+                    ]
+                );
 
 
-                    $em->persist($newUser);
-                    $em->flush();
+                $this->addFlash('success', 'User added successfully.');
 
 
-                    // ✅ AUDIT — USER CREATE
-                    $auditLogger->log(
-                        User::class,
-                        $newUser->getId(),
-                        ActionType::CREATE,
-                        null,
-                        [
-                            'username' => $newUser->getUsername(),
-                            'roles'    => $newUser->getRoles(),
-                            'password' => 'added',
-                        ]
+            } catch (UniqueConstraintViolationException $e) {
+                $this->addFlash('danger', 'Username already exists.');
+            }
+
+
+            return $this->redirectToRoute('app_users');
+        }
+
+
+  // --------------------
+// EDIT USERS FORMS
+// --------------------
+$forms = [];
+
+
+foreach ($users as $user) {
+
+
+    $form = $this->createFormBuilder($user, [
+        'attr' => ['id' => 'user_' . $user->getId()],
+    ])
+        ->add('username')
+        ->add('roles', ChoiceType::class, [
+            'choices' => [
+                'User'  => 'ROLE_USER',
+                'Admin' => 'ROLE_ADMIN',
+                'Staff' => 'ROLE_STAFF',
+            ],
+            'multiple' => true,
+            'expanded' => true,
+        ])
+        ->add('plainPassword', PasswordType::class, [
+            'mapped'   => false,
+            'required' => false
+        ])
+        ->getForm();
+
+
+    if ($context === 'edit_' . $user->getId()) {
+
+
+        $originalUsername = $user->getUsername();
+        $originalRoles    = $user->getRoles();
+
+
+        $form->handleRequest($request);
+
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('info', 'Form Submitted - Username Already Existed - No updates');
+            return $this->redirectToRoute('app_users');
+        }
+
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+
+            $newUsername = $form->get('username')->getData();
+            $newRoles    = $form->get('roles')->getData();   // ✅ get roles once
+
+
+            // ✅ Check duplicate username on other users
+            $existing = $em->getRepository(User::class)
+                           ->findOneBy(['username' => $newUsername]);
+
+
+            if ($existing && $existing->getId() !== $user->getId()) {
+
+
+                $user->setUsername($originalUsername);
+                $user->setRoles($originalRoles);
+
+
+                $this->addFlash('danger', 'Username already exists.');
+                return new RedirectResponse($this->generateUrl('app_users'), 302);
+            }
+
+
+            // ✅ Guard: current user cannot remove their own ROLE_ADMIN
+            $currentUser = $this->getUser();
+            if (
+                $currentUser &&
+                $currentUser->getId() === $user->getId() &&
+                !in_array('ROLE_ADMIN', $newRoles, true)
+            ) {
+                $this->addFlash('danger', 'Update Read - ROLE_ADMIN remains during logged session - Not removed.');
+                return $this->redirectToRoute('app_users');
+            }
+
+
+            $oldData = [
+                'username' => $originalUsername,
+                'roles'    => $originalRoles,
+            ];
+
+
+            // ✅ Apply safe changes
+            $user->setUsername($newUsername);
+            $user->setRoles($newRoles);
+
+
+            $pwd = $form->get('plainPassword')->getData();
+            $passwordChanged = false;
+
+
+            if (!empty($pwd)) {
+                $user->setPassword($hasher->hashPassword($user, $pwd));
+                $passwordChanged = true;
+            }
+
+
+            $em->flush();
+
+
+            $newData = [
+                'username' => $user->getUsername(),
+                'roles'    => $user->getRoles(),
+            ];
+
+
+            if ($passwordChanged) {
+                $newData['password'] = 'changed';
+            }
+
+
+            $auditLogger->log(
+                $user->getId(),
+                ActionType::UPDATE,
+                $oldData,
+                $newData
+            );
+
+
+            /* ✅ KEEP ADMIN LOGGED IN OR LOG OUT (your existing logic) */
+            $currentUser = $this->getUser();
+
+
+            if ($currentUser && $currentUser->getId() === $user->getId()) {
+
+
+                if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+
+
+                    $token = new PostAuthenticationToken(
+                        $user,
+                        'main',
+                        $user->getRoles()
                     );
 
 
-                    $this->addFlash('success', 'User added successfully.');
+                    $tokenStorage->setToken($token);
+                    $session->set('_security_main', serialize($token));
 
 
-                } catch (UniqueConstraintViolationException $e) {
-                    $this->addFlash('danger', 'Username already exists.');
-                }
-
-
-                return $this->redirectToRoute('app_users');
-            }
-        }
-
-
-        // --------------------
-        // EDIT USERS FORMS
-        // --------------------
-        $forms = [];
-        $context = $request->request->get('context');
-
-
-        foreach ($users as $user) {
-
-
-            $form = $this->createFormBuilder($user, [
-                'attr' => ['id' => 'user_' . $user->getId()],
-            ])
-                ->add('username')
-                ->add('roles', ChoiceType::class, [
-                    'choices'  => [
-                        'User'  => 'ROLE_USER',
-                        'Admin' => 'ROLE_ADMIN',
-                    ],
-                    'multiple' => true,
-                    'expanded' => true,
-                ])
-                ->add('plainPassword', PasswordType::class, [
-                    'mapped'   => false,
-                    'required' => false,
-                ])
-                ->getForm();
-
-
-            if ($context === 'edit_' . $user->getId()) {
-
-
-                // ✅ SNAPSHOT OLD VALUES
-                $oldData = [
-                    'username' => $user->getUsername(),
-                    'roles'    => $user->getRoles(),
-                ];
-
-
-                $form->handleRequest($request);
-
-
-                if ($form->isSubmitted() && $form->isValid()) {
-
-
-                    $submittedUsername = $form->get('username')->getData();
-
-
-                    $dupe = $em->getRepository(User::class)
-                               ->findOneBy(['username' => $submittedUsername]);
-
-
-                    if ($dupe && $dupe->getId() !== $user->getId()) {
-                        $this->addFlash('danger', 'Username already exists.');
-                        return $this->redirectToRoute('app_users');
-                    }
-
-
-                    $user->setUsername($submittedUsername);
-                    $user->setRoles($form->get('roles')->getData());
-
-
-                    $pwd = $form->get('plainPassword')->getData();
-                    $passwordChanged = false;
-
-
-                    if (!empty($pwd)) {
-                        $user->setPassword(
-                            $hasher->hashPassword($user, $pwd)
-                        );
-                        $passwordChanged = true;
-                    }
-
-
-                    $em->flush();
-
-
-                    $newData = [
-                        'username' => $user->getUsername(),
-                        'roles'    => $user->getRoles(),
-                    ];
-
-
-                    $cleanOld = [];
-                    $cleanNew = [];
-
-
-                    foreach ($oldData as $key => $oldValue) {
-                        if ($oldValue !== $newData[$key]) {
-                            $cleanOld[$key] = $oldValue;
-                            $cleanNew[$key] = $newData[$key];
-                        }
-                    }
-
-
-                    if ($passwordChanged) {
-                        $cleanNew['password'] = 'changed';
-                    }
-
-
-                    if (!empty($cleanOld) || !empty($cleanNew)) {
-                        $auditLogger->log(
-                            User::class,
-                            $user->getId(),
-                            ActionType::UPDATE,
-                            $cleanOld ?: null,
-                            $cleanNew ?: null
-                        );
-                    }
-
-
-                    if ($this->getUser() && $this->getUser()->getId() === $user->getId()) {
-                        $session->invalidate();
-                        $this->addFlash(
-                            'info',
-                            'Your account was updated. Please log in again.'
-                        );
-                        return $this->redirectToRoute('app_login');
-                    }
-
-
-                    $this->addFlash('success', 'User updated successfully.');
-                    return $this->redirectToRoute('app_users');
+                } else {
+                    $tokenStorage->setToken(null);
+                    $session->invalidate();
                 }
             }
 
 
-            $forms[$user->getId()] = $form->createView();
+            $this->addFlash('success', 'User updated successfully.');
+            return new RedirectResponse($this->generateUrl('app_users'), 302);
         }
+    }
 
+
+    $forms[$user->getId()] = $form->createView();
+}
 
         return $this->render('users.html.twig', [
             'users'     => $users,
             'userForms' => $forms,
-            'addForm'   => $addForm->createView()
+            'addForm'   => $addForm->createView(),
         ]);
     }
 
 
+    // --------------------
+    // TOGGLE USER ENABLE/DISABLE
+    // --------------------
+    #[Route('/users/{id}/toggle', name: 'app_users_toggle', methods: ['POST'])]
+    public function toggleEnabled(
+        int $id,
+        EntityManagerInterface $em,
+        Request $request,
+        AuditLogger $auditLogger
+    ): Response {
+
+
+        $user = $em->getRepository(User::class)->find($id);
+
+
+        if (!$user) {
+            $this->addFlash('danger', 'User not found.');
+            return $this->redirectToRoute('app_users');
+        }
+
+
+        if ($this->getUser() && $this->getUser()->getId() === $user->getId()) {
+            $this->addFlash('danger', 'You cannot disable your own account.');
+            return $this->redirectToRoute('app_users');
+        }
+
+
+        if (!$this->isCsrfTokenValid('toggle-user'.$id, $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Invalid CSRF token.');
+            return $this->redirectToRoute('app_users');
+        }
+
+
+        $oldStatus = $user->isEnabled();
+        $user->setIsEnabled(!$oldStatus);
+        $em->flush();
+
+
+        $auditLogger->log(
+            $user->getId(),
+            ActionType::UPDATE,
+            ['status' => $oldStatus ? 'Enabled account' : 'Disabled account'],
+            ['status' => $user->isEnabled() ? 'Enabled account' : 'Disabled account']
+        );
+
+
+        $this->addFlash(
+            'success',
+            sprintf(
+                'User "%s" has been %s.',
+                $user->getUsername(),
+                $user->isEnabled() ? 'enabled' : 'disabled'
+            )
+        );
+
+
+        return $this->redirectToRoute('app_users');
+    }
+
+
+    // --------------------
+    // DELETE USER
+    // --------------------
     #[Route('/users/{id}/delete', name: 'app_users_delete', methods: ['POST'])]
     public function delete(
         int $id,
@@ -351,35 +433,48 @@ class UserController extends AbstractController
         }
 
 
-        if (!$this->isCsrfTokenValid('delete-user' . $id, $request->request->get('_token'))) {
+        if (
+            !$this->isCsrfTokenValid(
+                'delete-user' . $id,
+                $request->request->get('_token')
+            )
+        ) {
             $this->addFlash('danger', 'Invalid CSRF token.');
             return $this->redirectToRoute('app_users');
         }
 
 
-        $deletedId = $user->getId();
+        $deletedId       = $user->getId();
+        $deletedUsername = $user->getUsername();
+        $deletedRoles    = $user->getRoles();
 
 
         $em->remove($user);
         $em->flush();
 
 
-        // ✅ AUDIT — USER DELETE
         $auditLogger->log(
-            User::class,
             $deletedId,
             ActionType::DELETE,
-            ['deleted' => true],
+            [
+                'username' => $deletedUsername,
+                'roles'    => $deletedRoles,
+                'deleted'  => true,
+            ],
             null
         );
 
 
-        $this->addFlash('success', 'User deleted successfully.');
+        $this->addFlash(
+            'success',
+            sprintf('User "%s" deleted successfully.', $deletedUsername)
+        );
 
 
         return $this->redirectToRoute('app_users');
     }
 }
+
 
 
 

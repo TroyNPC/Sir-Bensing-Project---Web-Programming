@@ -14,29 +14,48 @@ class AuditLogger
         private Security $security
     ) {}
 
+    /**
+     * $targetId = the ID of the record affected (ex: user ID, product ID, etc.)
+     * For LOGIN / LOGOUT you can pass null.
+     */
     public function log(
-        string $entityName,
-        int $entityId,
+        ?int $targetId,
         ActionType $type,
-        ?array $oldData,
-        ?array $newData
-    ): void
-    {
+        ?array $oldData = null,
+        ?array $newData = null
+    ): void {
+
+        // ✅ Keep AUTO_INCREMENT synced safely
+        $conn = $this->em->getConnection();
+
+        $maxId = $conn->fetchOne('SELECT MAX(id) FROM audit_log');
+        $nextId = $maxId ? ((int) $maxId + 1) : 1;
+
+        $conn->executeStatement(
+            'ALTER TABLE audit_log AUTO_INCREMENT = ' . $nextId
+        );
+
+        // Create audit record
         $log = new AuditLog();
 
-        $log->setEntityName($entityName);
-        $log->setEntityId($entityId);
+        // Target Data ID
+        $log->setTargetId($targetId);
+
+        // Action Type
         $log->setActionType($type);
 
+        // Old/New data snapshots
         $log->setOldData($oldData);
         $log->setNewData($newData);
 
+        // Actor = authenticated user
         $user = $this->security->getUser();
-        $log->setChangedBy($user?->getId());
+        $log->setUserId($user?->getId());
+
+        // Timestamp
         $log->setChangedAt(new \DateTimeImmutable());
 
-        $this->em->getConnection()
-            ->executeStatement('ALTER TABLE audit_log AUTO_INCREMENT = 1');
+        // Persist
         $this->em->persist($log);
         $this->em->flush();
     }

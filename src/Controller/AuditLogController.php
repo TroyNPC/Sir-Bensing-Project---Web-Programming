@@ -1,18 +1,15 @@
 <?php
 
-
 namespace App\Controller;
-
 
 use App\Entity\AuditLog;
 use App\Entity\User;
 use App\Repository\AuditLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;   // ✅ ADD
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
 
 class AuditLogController extends AbstractController
 {
@@ -21,23 +18,23 @@ class AuditLogController extends AbstractController
         AuditLogRepository $auditLogRepository,
         EntityManagerInterface $em
     ): Response {
-        // Get all logs (latest first)
+        // 🗒️ Get all logs (oldest first so IDs are in order)
         $logs = $auditLogRepository->createQueryBuilder('a')
             ->orderBy('a.id', 'ASC')
             ->getQuery()
             ->getResult();
 
-
-        // Resolve changed_by user IDs → usernames
+        // 🧩 Collect unique user IDs from audit_log.user_id
         $userIds = [];
         foreach ($logs as $log) {
-            if ($log->getChangedBy()) {
-                $userIds[] = $log->getChangedBy();
+            /** @var AuditLog $log */
+            if ($log->getUserId()) {
+                $userIds[] = $log->getUserId();
             }
         }
         $userIds = array_unique($userIds);
 
-
+        // 🧭 Resolve user_id → User entity so Twig can display username + roles
         $usersById = [];
         if (!empty($userIds)) {
             $userRepo = $em->getRepository(User::class);
@@ -49,13 +46,11 @@ class AuditLogController extends AbstractController
             }
         }
 
-
         return $this->render('audit_log/index.html.twig', [
             'logs'      => $logs,
             'usersById' => $usersById,
         ]);
     }
-
 
     #[Route('/audit-log/clear', name: 'app_audit_log_clear', methods: ['POST'])]
     public function clear(
@@ -67,22 +62,16 @@ class AuditLogController extends AbstractController
             return $this->redirectToRoute('app_audit_log_index');
         }
 
-
         $conn = $em->getConnection();
 
-
-        // ✅ Truncate table (also resets AUTO_INCREMENT to 1 in MySQL)
+        // 🧹 Clear all logs + reset AUTO_INCREMENT back to 1
         $conn->executeStatement('TRUNCATE TABLE audit_log');
 
-
         $this->addFlash('success', 'Audit history cleared.');
-
 
         return $this->redirectToRoute('app_audit_log_index');
     }
 }
-
-
 
 
 

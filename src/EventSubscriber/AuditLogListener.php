@@ -85,6 +85,21 @@ class AuditLogListener
         ?array $old,
         ?array $new
     ): void {
+        // 🔹 Ensure audit_log AUTO_INCREMENT is always max(id)+1 (or 1 if empty)
+        $connection = $em->getConnection();
+
+        $maxId = $connection->fetchOne('SELECT MAX(id) FROM audit_log');
+
+        if ($maxId === null) {
+            // No rows in audit_log -> restart from 1
+            $connection->executeStatement('ALTER TABLE audit_log AUTO_INCREMENT = 1');
+        } else {
+            // Set next id to MAX(id)+1
+            $nextId = ((int) $maxId) + 1;
+            $connection->executeStatement('ALTER TABLE audit_log AUTO_INCREMENT = ' . $nextId);
+        }
+
+        // 🔹 Existing logic below
 
         $meta = $em->getClassMetadata($entity::class);
         $id   = $meta->getFieldValue(
@@ -94,7 +109,7 @@ class AuditLogListener
 
         $log = new AuditLog();
         $log->setEntityName($meta->getName());
-        $log->setEntityId((int)$id);
+        $log->setEntityId((int) $id);
         $log->setActionType($type);
         $log->setOldData($old);
         $log->setNewData($new);

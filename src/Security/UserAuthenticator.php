@@ -57,6 +57,10 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
         return new RedirectResponse($this->urlGenerator->generate('app_admindashboard'));
     }
 
+    elseif (in_array('ROLE_STAFF', $user->getRoles())) {
+        return new RedirectResponse($this->urlGenerator->generate('app_pcproducts_index'));
+    }
+
     // 4. If not admin, send to user area
     return new RedirectResponse($this->urlGenerator->generate('app_projects'));
 }

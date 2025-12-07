@@ -14,6 +14,9 @@ if (!window.pcProductsInit) {
    PRODUCTS TABLE
 --------------------------- */
 function initPcProductsTable() {
+    // Match stocks.js behavior: silence DataTable errors in console
+    $.fn.dataTable.ext.errMode = 'none';
+
     const tableSelector = '#pcproductsTable';
     const $table = $(tableSelector);
 
@@ -21,14 +24,23 @@ function initPcProductsTable() {
 
     console.log("✅ initPcProductsTable running");
 
-    // Kill any existing instance on this table
+    // Destroy any existing instance on this table
     if ($.fn.dataTable.isDataTable(tableSelector)) {
         $table.DataTable().destroy();
     }
 
-    $table.DataTable({
+    // Avoid initializing on "No records" dummy row
+    const rowCount = $table.find('tbody tr').length;
+    const hasData =
+        rowCount > 0 &&
+        !$table.find('tbody tr td').first().text().includes('No records');
+
+    if (!hasData) return;
+
+    const dt = $table.DataTable({
+        destroy: true,
         responsive: false,
-        scrollX: false,
+        scrollX: true,
         paging: true,
         pageLength: 10,
         lengthChange: true,
@@ -40,10 +52,27 @@ function initPcProductsTable() {
             search: "INPUT",
             zeroRecords: "No matching products found",
             infoEmpty: "No products available",
+            info: "Showing START to END of TOTAL products",
             paginate: { previous: "Prev", next: "Next" }
         },
-        autoWidth: false,
-        stateSave: true, // keep page/search/sort
+        autoWidth: true,
+        stateSave: true,
+    });
+
+    // ✅ Adjust columns when sidebar toggles (same as stocks.js)
+    const sidebarToggler = document.getElementById('toggleSidebar');
+    if (sidebarToggler && !sidebarToggler.dataset.pcProductsBound) {
+        sidebarToggler.dataset.pcProductsBound = "true";
+        sidebarToggler.addEventListener('click', () => {
+            setTimeout(() => {
+                dt.columns.adjust();
+            }, 300);
+        });
+    }
+
+    // ✅ Auto-adjust on window resize
+    window.addEventListener('resize', () => {
+        dt.columns.adjust();
     });
 }
 
@@ -96,3 +125,5 @@ function initPcProductsPage() {
 
 document.addEventListener('DOMContentLoaded', initPcProductsPage);
 document.addEventListener('turbo:load', initPcProductsPage);
+
+

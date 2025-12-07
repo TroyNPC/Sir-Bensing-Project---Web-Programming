@@ -1,5 +1,5 @@
 {# templates/stocks/index.html.twig #}
-{% extends 'adminlayout.html.twig' %}
+{% extends 'layout.html.twig' %}
 
 {% block title %}Stocks{% endblock %}
 
@@ -39,7 +39,7 @@
                         {% if stocks|length > 0 %}
                             {% for stock in stocks %}
                                 <tr class="text-center">
-                                    <td>{{ stock.id }}</td>
+                                    <td class="text-center">{{ loop.index }}</td>
                                     <td>{{ stock.productname.name ?? 'Deleted Product' }}</td>
                                     <td>
                                         {% if stock.productname and stock.productname.image %}
@@ -91,7 +91,7 @@
                                     <div class="modal-dialog modal-dialog-centered modal-lg">
                                         <div class="modal-content border-0 rounded-4 shadow-lg">
                                             <div class="modal-header" style="background-color:#F88F6A; color:white;">
-                                                <h5 class="modal-title fw-semibold">Stock #{{ stock.id }}</h5>
+                                                <h5 class="modal-title fw-semibold">Stock</h5>
                                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body p-4">

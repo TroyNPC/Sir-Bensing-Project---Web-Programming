@@ -6,6 +6,7 @@ use App\Repository\ServicebookingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: ServicebookingRepository::class)]
 class Servicebooking
@@ -38,6 +39,34 @@ class Servicebooking
     #[ORM\Column]
     private ?\DateTimeImmutable $createdat = null;
 
+    // ✅ Staff relation
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $staff = null;
+
+    // Contact number from customer
+    #[ORM\Column(length: 30)]
+    #[Assert\NotBlank(message: 'Please enter your contact number.')]
+    #[Assert\Regex(
+        pattern: '/^\d{10,11}$/',
+        message: 'Please enter a valid mobile number (10–11 digits only).'
+    )]
+    private ?string $contactNumber = null;
+
+
+    // Email address of the customer
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Please enter your email address.')]
+    #[Assert\Email(
+        message: 'Please enter a valid email address.'
+    )]
+    private ?string $emailAddress = null;
+
+
+    // Status: ongoing | paused | completed
+    #[ORM\Column(length: 20)]
+    private ?string $status = 'ongoing';
+
     // ----------------- CONSTRUCTOR -----------------
     public function __construct()
     {
@@ -51,7 +80,6 @@ class Servicebooking
     {
         return $this->id;
     }
-    
 
     public function getCustomerName(): ?string
     {
@@ -118,6 +146,68 @@ class Servicebooking
         $this->createdat = $createdat;
         return $this;
     }
+
+    // ✅ Staff getter and setter
+    public function getStaff(): ?User
+    {
+        return $this->staff;
+    }
+
+    public function setStaff(?User $staff): static
+    {
+        $this->staff = $staff;
+        return $this;
+    }
+    public function getContactNumber(): ?string
+    {
+        return $this->contactNumber;
+    }
+
+
+    public function setContactNumber(string $contactNumber): self
+    {
+        $this->contactNumber = $contactNumber;
+
+
+        return $this;
+    }
+
+
+    public function getEmailAddress(): ?string
+    {
+        return $this->emailAddress;
+    }
+
+
+    public function setEmailAddress(string $emailAddress): self
+    {
+        $this->emailAddress = $emailAddress;
+
+
+        return $this;
+    }
+
+
+    /**
+     * Status: 'ongoing', 'paused', or 'completed'
+     */
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+
+    public function setStatus(string $status): self
+    {
+        // Optional guard, remove if you don’t want it strict:
+        if (!in_array($status, ['ongoing', 'paused', 'completed'], true)) {
+            throw new \InvalidArgumentException('Invalid status value');
+        }
+
+
+        $this->status = $status;
+
+
+        return $this;
+    }
 }
-
-

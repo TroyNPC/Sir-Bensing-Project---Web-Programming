@@ -53,6 +53,10 @@ class Pcproducts
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+    
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
 
     /**
      * @var Collection<int, Stocks>
@@ -64,6 +68,18 @@ class Pcproducts
     public function __construct()
     {
         $this->stocks = new ArrayCollection();
+    }
+
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $user): self
+    {
+        $this->createdBy = $user;
+        return $this;
     }
 
     // ----------------- GETTERS & SETTERS -----------------

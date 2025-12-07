@@ -1,0 +1,25 @@
+
+/* Profile input styling */
+.profile-input {
+    border-radius: 14px;
+    font-size: 1.1rem;
+    padding: 0.85rem 1.1rem;
+    letter-spacing: .04em;
+    background-color: #f8f9fa;
+    border: 2px solid #F88F6A;
+    transition: all 0.25s ease;
+}
+
+.profile-input:focus {
+    border-color: #ff6a47;
+    box-shadow: 0 0 0 0.2rem rgba(248, 143, 106, 0.25);
+    background-color: #ffffff;
+}
+
+.profile-form label {
+    text-align: center;
+    font-size: 0.95rem;
+    letter-spacing: .05em;
+}
+
+

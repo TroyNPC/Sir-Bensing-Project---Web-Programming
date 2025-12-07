@@ -22,8 +22,22 @@ final class PcproductsController extends AbstractController
     #[Route(name: 'app_pcproducts_index', methods: ['GET'])]
     public function index(PcproductsRepository $pcproductsRepository): Response
     {
+        $user = $this->getUser();
+
+        // Admin sees all, staff sees only their own products
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $products = $pcproductsRepository->findAll();
+        } else {
+            $products = $pcproductsRepository->createQueryBuilder('p')
+                ->where('p.createdBy = :user')
+                ->setParameter('user', $user)
+                ->orderBy('p.id', 'ASC')
+                ->getQuery()
+                ->getResult();
+        }
+
         return $this->render('pcproducts/index.html.twig', [
-            'pcproducts' => $pcproductsRepository->findAll(),
+            'pcproducts' => $products,
         ]);
     }
 
@@ -33,9 +47,9 @@ final class PcproductsController extends AbstractController
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger,
         AuditLogger $auditLogger
-    ): Response
-    {
+    ): Response {
         $pcproduct = new Pcproducts();
+        $pcproduct->setCreatedBy($this->getUser()); // 🔹 Set the product owner
         $form = $this->createForm(PcproductsType::class, $pcproduct);
         $form->handleRequest($request);
 
@@ -47,7 +61,7 @@ final class PcproductsController extends AbstractController
             // ✅ Adjust AUTO_INCREMENT based on the highest existing ID
             $connection = $entityManager->getConnection();
             $maxIdResult = $connection->fetchOne('SELECT MAX(id) FROM pcproducts');
-            $nextId = ((int)$maxIdResult) + 1;
+            $nextId = ((int) $maxIdResult) + 1;
             $connection->executeStatement('ALTER TABLE pcproducts AUTO_INCREMENT = ' . $nextId);
 
             // ✅ Handle image upload
@@ -73,21 +87,21 @@ final class PcproductsController extends AbstractController
             $entityManager->flush();
 
             // ✅ AUDIT — PRODUCT CREATE (FULL SNAPSHOT)
-        $auditLogger->log(
-            Pcproducts::class,
-            $pcproduct->getId(),
-            ActionType::CREATE,
-            null,
-            [
-                'product_name' => $pcproduct->getName(),
-                'brand'        => $pcproduct->getBrand(),
-                'category'     => $pcproduct->getCategory(),
-                'price'        => $pcproduct->getPrice(),
-                'description'  => $pcproduct->getDescription(),
-                'image'        => $pcproduct->getImage(),
-                'available'    => $pcproduct->isavailable(),
-            ]
-        );
+            $auditLogger->log(
+                $pcproduct->getId(),    // targetId
+                ActionType::CREATE,     // action type
+                null,                   // old data
+                [
+                    'product_name' => $pcproduct->getName(),
+                    'brand'        => $pcproduct->getBrand(),
+                    'category'     => $pcproduct->getCategory(),
+                    'price'        => $pcproduct->getPrice(),
+                    'description'  => $pcproduct->getDescription(),
+                    'image'        => $pcproduct->getImage(),
+                    'available'    => $pcproduct->isavailable(),
+                ]
+            );
+
             // ✅ Automatically create a new Stock record for this product
             $stock = new Stocks();
             $stock->setProductname($pcproduct);
@@ -97,7 +111,7 @@ final class PcproductsController extends AbstractController
             $stock->setUpdatedAt(new \DateTimeImmutable());
 
             $maxStockId = $connection->fetchOne('SELECT MAX(id) FROM stocks');
-            $nextStockId = ((int)$maxStockId) + 1;
+            $nextStockId = ((int) $maxStockId) + 1;
             $connection->executeStatement('ALTER TABLE stocks AUTO_INCREMENT = ' . $nextStockId);
 
             // ✅ Persist stock
@@ -111,7 +125,7 @@ final class PcproductsController extends AbstractController
 
         return $this->render('pcproducts/new.html.twig', [
             'pcproduct' => $pcproduct,
-            'form' => $form->createView(),
+            'form'      => $form->createView(),
         ]);
     }
 
@@ -128,106 +142,118 @@ final class PcproductsController extends AbstractController
     {
         return $this->render('pcproducts/show.html.twig', [
             'pcproduct' => $pcproduct,
-            'isModal' => true,
+            'isModal'   => true,
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_pcproducts_edit', methods: ['GET', 'POST'])]
-    public function edit(
-        Request $request,
-        Pcproducts $pcproduct,
-        EntityManagerInterface $entityManager,
-        SluggerInterface $slugger,
-        AuditLogger $auditLogger
-    ): Response
-    {
-        $form = $this->createForm(PcproductsType::class, $pcproduct);
-        $form->handleRequest($request);
+  #[Route('/{id}/edit', name: 'app_pcproducts_edit', methods: ['GET', 'POST'])]
+public function edit(
+    Request $request,
+    Pcproducts $pcproduct,
+    EntityManagerInterface $entityManager,
+    SluggerInterface $slugger,
+    AuditLogger $auditLogger
+): Response {
+    // 🔹 Ownership check: staff cannot edit others' products
+    if (!$this->isGranted('ROLE_ADMIN') && $pcproduct->getCreatedBy() !== $this->getUser()) {
+        $this->addFlash('error', '⚠️ You cannot edit products that are not yours.');
+        return $this->redirectToRoute('app_pcproducts_index');
+    }
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    // ✅ SNAPSHOT OLD VALUES *before* handling the form
+    $oldData = [
+        'product_name' => $pcproduct->getName(),
+        'brand'        => $pcproduct->getBrand(),
+        'category'     => $pcproduct->getCategory(),
+        'price'        => $pcproduct->getPrice(),
+        'description'  => $pcproduct->getDescription(),
+        'image'        => $pcproduct->getImage(),
+        'available'    => $pcproduct->isavailable(),
+    ];
 
-            // ✅ SNAPSHOT OLD VALUES (FULL TRACKING)
-            $oldData = [
-                'product_name' => $pcproduct->getName(),
-                'brand'        => $pcproduct->getBrand(),
-                'category'     => $pcproduct->getCategory(),
-                'price'        => $pcproduct->getPrice(),
-                'description'  => $pcproduct->getDescription(),
-                'image'        => $pcproduct->getImage(),
-                'available'    => $pcproduct->isavailable(),
-            ];
+    $form = $this->createForm(PcproductsType::class, $pcproduct);
+    $form->handleRequest($request);
 
-            $pcproduct->setUpdatedAt(new \DateTimeImmutable());
+    if ($form->isSubmitted() && $form->isValid()) {
 
-            $isAvailable = $form->get('isavailable')->getData();
-            $pcproduct->setIsavailable($isAvailable);
+        $pcproduct->setUpdatedAt(new \DateTimeImmutable());
 
-            $imageFile = $form->get('image')->getData();
-            if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+        // isavailable will already be updated by handleRequest, but this doesn’t hurt
+        $isAvailable = $form->get('isavailable')->getData();
+        $pcproduct->setIsavailable($isAvailable);
 
-                try {
-                    $imageFile->move(
-                        $this->getParameter('products_images_directory'),
-                        $newFilename
-                    );
+        // Image upload
+        $imageFile = $form->get('image')->getData();
+        if ($imageFile) {
+            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename     = $slugger->slug($originalFilename);
+            $newFilename      = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
 
-                    $oldImage = $pcproduct->getImage();
-                    if ($oldImage && file_exists($this->getParameter('products_images_directory') . '/' . $oldImage)) {
-                        @unlink($this->getParameter('products_images_directory') . '/' . $oldImage);
-                    }
+            try {
+                $imageFile->move(
+                    $this->getParameter('products_images_directory'),
+                    $newFilename
+                );
 
-                    $pcproduct->setImage($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', '❌ Failed to upload new image.');
+                $oldImage = $pcproduct->getImage();
+                if ($oldImage && file_exists($this->getParameter('products_images_directory').'/'.$oldImage)) {
+                    @unlink($this->getParameter('products_images_directory').'/'.$oldImage);
                 }
+
+                $pcproduct->setImage($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', '❌ Failed to upload new image.');
             }
-
-            // ✅ Save updated product
-            $entityManager->flush();
-
-            // ✅ SNAPSHOT NEW VALUES
-            $newData = [
-                'product_name' => $pcproduct->getName(),
-                'brand'        => $pcproduct->getBrand(),
-                'category'     => $pcproduct->getCategory(),
-                'price'        => $pcproduct->getPrice(),
-                'description'  => $pcproduct->getDescription(),
-                'image'        => $pcproduct->getImage(),
-                'available'    => $pcproduct->isavailable(),
-            ];
-
-            // ✅ FILTER UNCHANGED FIELDS
-            $cleanOld = [];
-            $cleanNew = [];
-
-            foreach ($oldData as $key => $oldValue) {
-                if ($oldValue !== $newData[$key]) {
-                    $cleanOld[$key] = $oldValue;
-                    $cleanNew[$key] = $newData[$key];
-                }
-            }
-
-            // ✅ AUDIT — PRODUCT UPDATE (COMPLETE DIFF)
-            $auditLogger->log(
-                Pcproducts::class,
-                $pcproduct->getId(),
-                ActionType::UPDATE,
-                $cleanOld ?: null,
-                $cleanNew ?: null
-            );
-
-            $this->addFlash('success', '✅ Product updated successfully!');
-            return $this->redirectToRoute('app_pcproducts_index');
         }
 
-        return $this->render('pcproducts/edit.html.twig', [
-            'pcproduct' => $pcproduct,
-            'form' => $form->createView(),
-        ]);
+        // ✅ Save updated product
+        $entityManager->flush();
+
+        // ✅ SNAPSHOT NEW VALUES
+        $newData = [
+            'product_name' => $pcproduct->getName(),
+            'brand'        => $pcproduct->getBrand(),
+            'category'     => $pcproduct->getCategory(),
+            'price'        => $pcproduct->getPrice(),
+            'description'  => $pcproduct->getDescription(),
+            'image'        => $pcproduct->getImage(),
+            'available'    => $pcproduct->isavailable(),
+        ];
+
+        // ✅ FILTER UNCHANGED FIELDS
+        $cleanOld = [];
+        $cleanNew = [];
+
+        foreach ($oldData as $key => $oldValue) {
+            if ($oldValue !== $newData[$key]) {
+                $cleanOld[$key] = $oldValue;
+                $cleanNew[$key] = $newData[$key];
+            }
+        }
+
+        // Only log if something actually changed
+        if (!empty($cleanOld) || !empty($cleanNew)) {
+            $auditLogger->log(
+                $pcproduct->getId(),   // targetId
+                ActionType::UPDATE,    // action type
+                $cleanOld ?: null,     // old data
+                $cleanNew ?: null      // new data
+            );
+        }
+
+        $this->addFlash('success', '✅ Product updated successfully!');
+        return $this->redirectToRoute('app_pcproducts_index');
     }
+
+    return $this->render('pcproducts/edit.html.twig', [
+        'pcproduct' => $pcproduct,
+        'form'      => $form->createView(),
+    ]);
+}
+
+
+
+
 
     #[Route('/{id}', name: 'app_pcproducts_delete', methods: ['POST'])]
     public function delete(
@@ -236,12 +262,17 @@ final class PcproductsController extends AbstractController
         PcproductsRepository $repo,
         int $id,
         AuditLogger $auditLogger
-    ): Response
-    {
+    ): Response {
         $pcproduct = $repo->find($id);
 
         if (!$pcproduct) {
             $this->addFlash('error', '⚠️ Product not found or already deleted.');
+            return $this->redirectToRoute('app_pcproducts_index');
+        }
+
+        // 🔹 Ownership check: staff cannot delete others' products
+        if (!$this->isGranted('ROLE_ADMIN') && $pcproduct->getCreatedBy() !== $this->getUser()) {
+            $this->addFlash('error', '⚠️ You cannot delete products that are not yours.');
             return $this->redirectToRoute('app_pcproducts_index');
         }
 
@@ -258,13 +289,12 @@ final class PcproductsController extends AbstractController
             $entityManager->remove($pcproduct);
             $entityManager->flush();
 
-            // ✅ AUDIT — PRODUCT DELETE (UNCHANGED)
+            // ✅ AUDIT — PRODUCT DELETE
             $auditLogger->log(
-                Pcproducts::class,
-                $deletedID,
-                ActionType::DELETE,
-                ['deleted' => true],
-                null
+                $deletedID,            // targetId
+                ActionType::DELETE,    // action type
+                ['deleted' => true],   // old data
+                null                   // new data
             );
 
             $maxId = $entityManager->getConnection()
@@ -283,6 +313,8 @@ final class PcproductsController extends AbstractController
         return $this->redirectToRoute('app_pcproducts_index');
     }
 }
+
+
 
 
 

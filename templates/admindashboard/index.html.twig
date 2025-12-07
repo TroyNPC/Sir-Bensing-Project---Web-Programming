@@ -1,10 +1,11 @@
-{% extends 'adminlayout.html.twig' %}
+{% extends 'layout.html.twig' %}
 
 {% block content %}
 <div class="container-fluid">
   <h3 class="mb-4">Dashboard</h3>
 
   <div class="row g-4">
+    <!-- Total Produce Prices -->
     <div class="col-md-4">
       <div class="card shadow border-0" style="background: linear-gradient(135deg, #ff9a8b, #ff6a88); color: white;">
         <div class="card-body">
@@ -15,6 +16,7 @@
       </div>
     </div>
 
+    <!-- Total Products -->
     <div class="col-md-4">
       <div class="card shadow border-0" style="background: linear-gradient(135deg, #56ccf2, #2f80ed); color: white;">
         <div class="card-body">
@@ -25,6 +27,7 @@
       </div>
     </div>
 
+    <!-- Service Bookings -->
     <div class="col-md-4">
       <div class="card shadow border-0" style="background: linear-gradient(135deg, #6a11cb, #2575fc); color: white;">
         <div class="card-body">
@@ -35,30 +38,143 @@
       </div>
     </div>
 
+    <!-- Total Users -->
     <div class="col-md-4">
       <div class="card shadow border-0" style="background: linear-gradient(135deg, #43e97b, #38f9d7); color: white;">
         <div class="card-body">
-          <h5>Registered Users</h5>
-          <h2>{{ userCount }}</h2>  
-          <p>Made Accounts</p>
+          <h5>Total Users</h5>
+          <h2>{{ userCount }}</h2>
+          <p>Registered accounts</p>
         </div>
       </div>
     </div>
 
+    <!-- Total Staff -->
+    <div class="col-md-4">
+      <div class="card shadow border-0" style="background: linear-gradient(135deg, #f7971e, #ffd200); color: white;">
+        <div class="card-body">
+          <h5>Total Staff</h5>
+          <h2>{{ staffCount }}</h2>
+          <p>Accounts with Staff role</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Admin -->
     <div class="col-md-4">
       <div class="card shadow border-0" style="background: linear-gradient(135deg, #ff9a44, #ff6a88); color: white;">
         <div class="card-body">
-        <h5>Audit Logs</h5>
-        <h2>{{ auditCount }}</h2>
-        <p>System Activity</p>
+          <h5>Total Admin</h5>
+          <h2>{{ adminCount }}</h2>
+          <p>Accounts with Admin role</p>
         </div>
       </div>
     </div>
 
+    <!-- Audit Logs Count -->
+    <div class="col-md-4">
+      <div class="card shadow border-0" style="background: linear-gradient(135deg, #4b6cb7, #182848); color: white;">
+        <div class="card-body">
+          <h5>Audit Logs</h5>
+          <h2>{{ auditCount }}</h2>
+          <p>System activity entries</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activities -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card shadow border-0">
+        <div class="card-body">
+          <h5 class="mb-3">Recent Activities</h5>
+
+          {% if recentLogs is not empty %}
+              <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                      <thead>
+                          <tr>
+                              <th scope="col">Date &amp; Time</th>
+                              <th scope="col">User</th>
+                              <th scope="col">Action</th>
+                              <th scope="col">Target</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      {% for log in recentLogs %}
+                          {% set uid        = log.userId %}
+                          {% set user       = uid and usersById[uid] is defined ? usersById[uid] : null %}
+                          {% set old        = log.oldData ?? {} %}
+                          {% set new        = log.newData ?? {} %}
+                          {% set tid        = log.targetId %}
+                          {% set actionName = log.actionType.name %}
+
+                          {# SAME targetName logic as audit_log/index.html.twig #}
+                          {% set targetName =
+                              new.username
+                              ?? old.username
+                              ?? new.product_name
+                              ?? old.product_name
+                              ?? new.customer_name
+                              ?? old.customer_name
+                              ?? (actionName in ['LOGIN','LOGOUT'] and user ? user.username : null)
+                          %}
+
+                          <tr>
+                              <!-- Date & Time -->
+                              <td class="small">
+                                  {{ log.changedAt ? log.changedAt|date('Y-m-d H:i:s') : '—' }}
+                              </td>
+
+                              <!-- User -->
+                              <td class="small">
+                                  {% if user %}
+                                      {{ user.username }} <span class="text-muted">(ID: {{ user.id }})</span>
+                                  {% elseif uid %}
+                                      <span class="text-muted">User ID: {{ uid }}</span>
+                                  {% else %}
+                                      <span class="text-muted">System / Guest</span>
+                                  {% endif %}
+                              </td>
+
+                              <!-- Action -->
+                              <td class="small">
+                                  <span class="badge rounded-pill px-3 py-1"
+                                        style="background-color:#2e2e2e; color:white;">
+                                      {{ actionName }}
+                                  </span>
+                              </td>
+
+                              <!-- Target -->
+                              <td class="small">
+                                  {% if targetName %}
+                                      {{ targetName }}
+                                      {% if tid %}<span class="text-muted"> (ID: {{ tid }})</span>{% endif %}
+                                  {% elseif tid %}
+                                      <span class="text-muted">ID: {{ tid }}</span>
+                                  {% else %}
+                                      <span class="text-muted">N/A</span>
+                                  {% endif %}
+                              </td>
+                          </tr>
+                      {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+          {% else %}
+              <p class="text-muted mb-0">No recent activity logged yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <style>
+body {
+  min-height: 100vh;
+}
 .card {
   border-radius: 1rem;
   transition: transform 0.3s;
@@ -68,3 +184,6 @@
 }
 </style>
 {% endblock %}
+
+
+

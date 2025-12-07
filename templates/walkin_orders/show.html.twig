@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}WalkinOrders{% endblock %}
+
+{% block body %}
+    <h1>WalkinOrders</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ walkin_order.id }}</td>
+            </tr>
+            <tr>
+                <th>BuyerName</th>
+                <td>{{ walkin_order.buyerName }}</td>
+            </tr>
+            <tr>
+                <th>Contact</th>
+                <td>{{ walkin_order.contact }}</td>
+            </tr>
+            <tr>
+                <th>PaymentMethod</th>
+                <td>{{ walkin_order.paymentMethod }}</td>
+            </tr>
+            <tr>
+                <th>PaymentStatus</th>
+                <td>{{ walkin_order.paymentStatus }}</td>
+            </tr>
+            <tr>
+                <th>Quantity</th>
+                <td>{{ walkin_order.quantity }}</td>
+            </tr>
+            <tr>
+                <th>WarrantyText</th>
+                <td>{{ walkin_order.warrantyText }}</td>
+            </tr>
+            <tr>
+                <th>PurchaseDate</th>
+                <td>{{ walkin_order.purchaseDate ? walkin_order.purchaseDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_walkin_orders_index') }}">back to list</a>
+
+    <a href="{{ path('app_walkin_orders_edit', {'id': walkin_order.id}) }}">edit</a>
+
+    {{ include('walkin_orders/_delete_form.html.twig') }}
+{% endblock %}

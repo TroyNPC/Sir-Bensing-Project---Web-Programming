@@ -4,6 +4,7 @@
     <link rel="stylesheet" href="{{ asset('Arrangestyle/login.css') }}?v=1.0">
     {% endblock %}
     {% block body %}
+
     <form method="post" class="login-form" data-turbo="false">
         {% if error %}
             <div class="login-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>

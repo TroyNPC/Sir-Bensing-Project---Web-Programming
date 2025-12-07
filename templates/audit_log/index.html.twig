@@ -1,24 +1,15 @@
-{% extends 'adminlayout.html.twig' %}
-
+{% extends 'layout.html.twig' %}
 
 {% block title %}Audit Logs{% endblock %}
-
-
-{% block feature_stylesheets %}
-    <link rel="stylesheet" href="/Arrangestyle/pcproducts/adminpcproduct.css">
-{% endblock %}
-
 
 {% block content %}
 <div class="container-fluid py-5">
 
-
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
-        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">📜 Audit Logs</h3>
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">📜 Activity Logs</h3>
 
-
-        <!-- ✅ Delete History button -->
+        <!-- ✅ Delete History button (unchanged) -->
         <form method="post"
               action="{{ path('app_audit_log_clear') }}"
               data-turbo="false"
@@ -27,13 +18,11 @@
             <button type="submit"
                     class="btn btn-sm btn-danger px-3 py-2 shadow-sm"
                     style="border-radius:8px;"
-                    data-turbo = "false"
-                    >
+                    data-turbo="false">
                 <i class="bi bi-trash3 me-1"></i> Delete History
             </button>
         </form>
     </div>
-
 
     <div class="card border-0 shadow-sm rounded-4 mx-1">
         <div class="card-body p-0">
@@ -43,57 +32,87 @@
                        style="min-width: 1100px;">
                     <thead style="background-color:#F88F6A; color:white;">
                         <tr class="text-center">
-                            <th>ID</th>
-                            <th>Entity &amp; Action</th>
-                            <th>Entity Record</th>
-                            <th>Old Data</th>
-                            <th>New Data</th>
-                            <th>Changed By</th>
-                            <th>Changed At</th>
+                            <th>Log ID</th>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                            <th style="min-width:220px;">Old Data</th>
+                            <th style="min-width:220px;">New Data</th>
+                            <th>Target Data</th>
+                            <th>Date &amp; Time</th>
                         </tr>
                     </thead>
 
-
                     <tbody>
                     {% for log in logs %}
-                        {# Remove App\Entity\ and keep the rest #}
-                        {% set fullName = log.entityName %}
-                        {% set shortName = fullName ? fullName|replace({'App\\Entity\\':''}) : fullName %}
+                        {% set uid   = log.userId %}
+                        {% set user  = uid and usersById[uid] is defined ? usersById[uid] : null %}
+                        {% set old   = log.oldData ?? {} %}
+                        {% set new   = log.newData ?? {} %}
+                        {% set tid   = log.targetId %}
 
+                        {# Try to get a human label for Target Data from old/new #}
+                        {% set targetName =
+                            new.username
+                            ?? old.username
+                            ?? new.product_name
+                            ?? old.product_name
+                            ?? new.customer_name
+                            ?? old.customer_name
+                            ?? (log.actiontype.name in ['LOGIN', 'LOGOUT'] and user ? user.username : null)
+                        %}
 
-                        <tr>
-                            <!-- ID -->
-                            <td class="text-center">{{ log.id }}</td>
-
-
-                            <!-- Entity & Action -->
-                            <td class="text-center">
-                                <div class="fw-semibold">{{ shortName }}</div>
-                                <div class="mt-1">
-                                    <span class="badge rounded-pill px-3 py-1"
-                                          style="background-color:#2e2e2e; color:white;">
-                                        {{ log.actionType.name }}
-                                    </span>
-                                </div>
+                        <tr class="align-top">
+                            <!-- Log ID -->
+                            <td class="text-center fw-semibold">
+                                {{ log.id }}
                             </td>
 
-
-                            <!-- Entity Record (Pcproducts ID: 1 / Servicebooking ID: 2 / etc.) -->
+                            <!-- User ID -->
                             <td class="text-center">
-                                {% if shortName %}
-                                    {{ shortName }} ID: {{ log.entityId }}
+                                {% if uid %}
+                                    {{ uid }}
                                 {% else %}
-                                    ID: {{ log.entityId }}
+                                    <span class="text-muted small">System / Guest</span>
                                 {% endif %}
                             </td>
 
+                            <!-- Username -->
+                            <td class="text-center">
+                                {% if user %}
+                                    {{ user.username }}
+                                {% elseif uid %}
+                                    <span class="text-muted small">Deleted user (ID: {{ uid }})</span>
+                                {% else %}
+                                    <span class="text-muted small">System / Guest</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Role -->
+                            <td class="text-center small">
+                                {% if user %}
+                                    {{ user.roles|join(', ') }}
+                                {% elseif uid %}
+                                    <span class="text-muted">Unknown</span>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Action -->
+                            <td class="text-center">
+                                <span class="badge rounded-pill px-3 py-1"
+                                      style="background-color:#2e2e2e; color:white;">
+                                    {{ log.actionType.name }}
+                                </span>
+                            </td>
 
                             <!-- Old Data -->
                             <td style="max-width: 320px;">
-                                {% set old = log.oldData ?? {} %}
-
-
                                 {% if old is iterable and old|length %}
+                                    {% set oldImage = old.image is defined ? old.image : null %}
+
                                     <div class="small text-start">
                                         {# Text fields first (everything except image) #}
                                         {% for key, value in old %}
@@ -110,11 +129,13 @@
                                             {% endif %}
                                         {% endfor %}
 
-
                                         {# Image (if present) always below text #}
-                                        {% if 'image' in old|keys and old.image %}
+                                        {% if oldImage %}
                                             <div class="mt-2 text-center">
-                                                <img src="{{ asset('uploads/products/' ~ old.image) }}"
+                                                <div class="small text-muted mb-1">
+                                                    Old image: {{ oldImage }}
+                                                </div>
+                                                <img src="{{ asset('uploads/products/' ~ oldImage) }}"
                                                      alt="Old image"
                                                      class="rounded border"
                                                      style="max-height:70px; object-fit:contain; background:#f8f8f8; padding:3px;">
@@ -126,13 +147,11 @@
                                 {% endif %}
                             </td>
 
-
                             <!-- New Data -->
                             <td style="max-width: 320px;">
-                                {% set new = log.newData ?? {} %}
-
-
                                 {% if new is iterable and new|length %}
+                                    {% set newImage = new.image is defined ? new.image : null %}
+
                                     <div class="small text-start">
                                         {# Text fields first (everything except image) #}
                                         {% for key, value in new %}
@@ -149,11 +168,13 @@
                                             {% endif %}
                                         {% endfor %}
 
-
                                         {# Image (if present) always below text #}
-                                        {% if 'image' in new|keys and new.image %}
+                                        {% if newImage %}
                                             <div class="mt-2 text-center">
-                                                <img src="{{ asset('uploads/products/' ~ new.image) }}"
+                                                <div class="small text-muted mb-1">
+                                                    New image: {{ newImage }}
+                                                </div>
+                                                <img src="{{ asset('uploads/products/' ~ newImage) }}"
                                                      alt="New image"
                                                      class="rounded border"
                                                      style="max-height:70px; object-fit:contain; background:#f8f8f8; padding:3px;">
@@ -165,31 +186,25 @@
                                 {% endif %}
                             </td>
 
-
-                            <!-- Changed By (user id + username) -->
-                            <td class="text-center small">
-                                {% set uid = log.changedBy %}
-                                {% if uid %}
-                                    {% if usersById[uid] is defined %}
-                                        {{ usersById[uid].username }}<br>
-                                        <span class="text-muted">ID: {{ uid }}</span>
-                                    {% else %}
-                                        <span class="text-muted">User ID: {{ uid }}</span>
-                                    {% endif %}
+                            <!-- Target Data -->
+                            <td class="small">
+                                {% if targetName %}
+                                    {{ targetName }}
+                                    {% if tid %}<br><span class="text-muted">ID: {{ tid }}</span>{% endif %}
+                                {% elseif tid %}
+                                    ID: {{ tid }}
                                 {% else %}
-                                    <span class="text-muted">System / Guest</span>
+                                    <span class="text-muted">N/A</span>
                                 {% endif %}
                             </td>
 
-
-                            <!-- Changed At (date only) -->
+                            <!-- Date & Time -->
                             <td class="text-center small">
-                                {{ log.changedAt ? log.changedAt|date('Y-m-d') : '—' }}
+                                {{ log.changedAt ? log.changedAt|date('Y-m-d H:i:s') : '—' }}
                             </td>
                         </tr>
                     {% endfor %}
                     </tbody>
-
 
                 </table>
             </div>
@@ -198,12 +213,9 @@
 </div>
 {% endblock %}
 
-
 {% block feature_javascripts %}
-    {{ encore_entry_script_tags('auditlog') }}
+    {{ encore_entry_script_tags('adminauditlog') }}
 {% endblock %}
-
-
 
 
 

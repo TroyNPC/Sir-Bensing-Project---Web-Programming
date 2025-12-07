@@ -74,9 +74,8 @@
         <div class="d-flex align-items-center gap-3">
           {% if app.user %}
             <!-- Welcome Text -->
-            <span class="fw-semibold" style="color: #F88F6A;">Welcome, {{ app.user.username }}</span>
-
-            <!-- Logout Button -->
+            <a href="{{ path('app_profile') }}" class="nav-link" data-turbo = "false">
+            <i class="bi bi-person-circle me-2" ></i> My Profile
             <a href="{{ path('app_logout') }}" class="btn btn-sm btn-outline-danger">
               Logout
             </a>

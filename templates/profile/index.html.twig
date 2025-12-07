@@ -1,0 +1,77 @@
+{% extends (is_granted('ROLE_ADMIN') or is_granted('ROLE_STAFF'))
+    ? 'layout.html.twig'
+    : 'headerfooter.html.twig'
+%}
+
+{% block feature_stylesheets %}
+<link rel="stylesheet" href="{{ asset('Arrangestyle/profile.css') }}">
+{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-center mt-5">
+  <div class="card shadow-lg p-5 text-center" style="width:600px; border-radius:1rem">
+
+        {% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% endfor %}
+    
+    <!-- User Icon -->
+    <i class="bi bi-person-circle mb-3" style="font-size:90px; color:#F88F6A;"></i>
+
+    <!-- Username + Roles -->
+    <h4 class="fw-bold">{{ user.username }}</h4>
+    <p class="text-muted">{{ user.roles|join(', ') }}</p>
+
+    <hr>
+{{ form_start(form, {'attr': {'class': 'profile-form'}}) }}
+
+<div class="mb-3">
+    {{ form_label(form.plainPassword, 'New Password', {
+        'label_attr': {
+            'class': 'form-label fw-bold text-start w-100'
+        }
+    }) }}
+
+    {{ form_widget(form.plainPassword, {
+        'attr': {
+            'class': 'form-control form-control-lg profile-input text-center',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password'
+        }
+    }) }}
+</div>
+
+<button class="btn btn-warning w-100 py-3 fw-bold mt-3" data-turbo="false">
+    Change Password
+</button>
+
+{{ form_end(form) }}
+
+    <hr>
+
+    <!-- Logout Button -->
+    <a href="{{ path('app_logout') }}"
+       class="btn btn-danger w-100">
+        Logout
+    </a>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{# 🔑 This makes ROLE_USER (headerfooter) render the same content #}
+{% block body %}
+    {{ block('content') }}
+{% endblock %}
+
+
+
+
+
+
