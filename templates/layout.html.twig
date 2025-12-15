@@ -53,6 +53,16 @@
           <li class="nav-item text-uppercase small fw-bold  px-3 mt-3 mb-1" style="color: var(--accent);">
               Staff Menu
           </li>
+          
+      {# STAFF Dashboard ONLY (ADMIN CANNOT SEE THIS) #}
+          {% if is_granted('ROLE_STAFF') and not is_granted('ROLE_ADMIN') %}
+          <li class="nav-item">
+            <a href="{{ path('app_staff_dashboard') }}"
+               class="nav-link {% if app.request.get('_route') == 'app_staff_dashboard' %}active{% endif %}">
+               <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+          </li>
+          {% endif %}
 
           <!-- Products -->
           <li class="nav-item">
