@@ -1,50 +1,112 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout.html.twig' %}
 
-{% block title %}WalkinOrders{% endblock %}
 
-{% block body %}
-    <h1>WalkinOrders</h1>
+{% block title %}View Walk-in Order{% endblock %}
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ walkin_order.id }}</td>
-            </tr>
-            <tr>
-                <th>BuyerName</th>
-                <td>{{ walkin_order.buyerName }}</td>
-            </tr>
-            <tr>
-                <th>Contact</th>
-                <td>{{ walkin_order.contact }}</td>
-            </tr>
-            <tr>
-                <th>PaymentMethod</th>
-                <td>{{ walkin_order.paymentMethod }}</td>
-            </tr>
-            <tr>
-                <th>PaymentStatus</th>
-                <td>{{ walkin_order.paymentStatus }}</td>
-            </tr>
-            <tr>
-                <th>Quantity</th>
-                <td>{{ walkin_order.quantity }}</td>
-            </tr>
-            <tr>
-                <th>WarrantyText</th>
-                <td>{{ walkin_order.warrantyText }}</td>
-            </tr>
-            <tr>
-                <th>PurchaseDate</th>
-                <td>{{ walkin_order.purchaseDate ? walkin_order.purchaseDate|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-        </tbody>
-    </table>
 
-    <a href="{{ path('app_walkin_orders_index') }}">back to list</a>
-
-    <a href="{{ path('app_walkin_orders_edit', {'id': walkin_order.id}) }}">edit</a>
-
-    {{ include('walkin_orders/_delete_form.html.twig') }}
+{% block Stylesheet %}
+    <link rel="stylesheet" href="{{ asset('Arrangestyle/walkinorders.css') }}">
 {% endblock %}
+
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">
+            🧾 Walk-in Order #{{ walkin_order.id }}
+        </h3>
+
+
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_walkin_orders_edit', {'id': walkin_order.id}) }}"
+               class="btn btn-sm fw-semibold"
+               style="background-color:#2e2e2e; color:white; border-radius:6px; padding: 6px 12px;">
+                Edit
+            </a>
+            <a href="{{ path('app_walkin_orders_index') }}"
+               class="btn btn-sm btn-secondary fw-semibold"
+               style="border-radius:6px; padding: 6px 12px;">
+                Back to Orders
+            </a>
+        </div>
+    </div>
+
+
+    <div class="card border-0 shadow-sm rounded-4 mx-1">
+        <div class="card-body p-4">
+            <dl class="row mb-0">
+                <dt class="col-md-3 fw-semibold">Buyer Name</dt>
+                <dd class="col-md-9">{{ walkin_order.buyerName }}</dd>
+
+
+                <dt class="col-md-3 fw-semibold">Contact</dt>
+                <dd class="col-md-9">{{ walkin_order.contact }}</dd>
+
+
+                <dt class="col-md-3 fw-semibold">Payment Method</dt>
+                <dd class="col-md-9">
+                    {% set pm = walkin_order.paymentMethod %}
+                    {% if pm == 'cash' %}
+                        Cash
+                    {% elseif pm == 'credit_card' %}
+                        Credit Card
+                    {% elseif pm == 'debit_card' %}
+                        Debit Card
+                    {% elseif pm == 'gcash' %}
+                        GCash
+                    {% elseif pm == 'bank_transfer' %}
+                        Bank Transfer
+                    {% else %}
+                        {{ pm }}
+                    {% endif %}
+                </dd>
+
+
+                <dt class="col-md-3 fw-semibold">Payment Status</dt>
+                <dd class="col-md-9">
+                    {% if walkin_order.paymentStatus == 'paid' %}
+                        <span class="badge bg-success">Paid</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Unpaid</span>
+                    {% endif %}
+                </dd>
+
+
+                <dt class="col-md-3 fw-semibold">Product</dt>
+                <dd class="col-md-9">
+                    {{ walkin_order.product ? walkin_order.product.name : '—' }}
+                </dd>
+
+
+                <dt class="col-md-3 fw-semibold">Quantity</dt>
+                <dd class="col-md-9">{{ walkin_order.quantity }}</dd>
+
+
+                <dt class="col-md-3 fw-semibold">Purchase Date</dt>
+                <dd class="col-md-9">
+                    {{ walkin_order.purchaseDate ? walkin_order.purchaseDate|date('Y-m-d H:i') : '—' }}
+                </dd>
+
+
+                <dt class="col-md-3 fw-semibold">Warranty</dt>
+                <dd class="col-md-9">
+                    <pre class="mb-0" style="white-space:pre-wrap; font-family:inherit;">
+{{ walkin_order.warrantyText }}
+                    </pre>
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+
+
+
+
+

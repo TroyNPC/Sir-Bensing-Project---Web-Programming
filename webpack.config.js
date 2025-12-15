@@ -30,7 +30,7 @@ Encore
     .addEntry('customerproducts', './assets/js/customerproducts.js')
     .addEntry('new', './assets/js/new.js')
     .addEntry('adminauditlog', './assets/js/adminauditlog.js')
-    
+    .addEntry('walkinorder', './assets/js/walkinorder.js')
 
 
 

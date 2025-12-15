@@ -7,6 +7,8 @@ namespace App\Entity;
 use App\Repository\WalkinOrdersRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+// 🔹 NEW: import User so we can relate orders to a user
+use App\Entity\User;
 
 
 #[ORM\Entity(repositoryClass: WalkinOrdersRepository::class)]
@@ -17,6 +19,12 @@ class WalkinOrders
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+
+    // 🔹 NEW: who created this walk-in order
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?User $createdBy = null;
 
 
     // Name of buyer
@@ -106,6 +114,20 @@ class WalkinOrders
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+
+    // 🔹 NEW: createdBy getter/setter
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+
+    public function setCreatedBy(?User $createdBy): self
+    {
+        $this->createdBy = $createdBy;
+        return $this;
     }
 
 

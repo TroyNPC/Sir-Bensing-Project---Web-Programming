@@ -20,7 +20,7 @@ class SecurityController extends AbstractController
         }
 
         elseif ($this->isGranted('ROLE_STAFF')){
-            return $this->redirectToRoute('app_pcproducts_index');
+            return $this->redirectToRoute('app_staff_dashboard');
         }
         elseif($this->isGranted('ROLE_USER')){
         return $this->redirectToRoute('app_projects');

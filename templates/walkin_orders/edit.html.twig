@@ -1,13 +1,191 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout.html.twig' %}
 
-{% block title %}Edit WalkinOrders{% endblock %}
+{% block title %}Edit Walk-in Order{% endblock %}
 
-{% block body %}
-    <h1>Edit WalkinOrders</h1>
 
-    {{ include('walkin_orders/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('app_walkin_orders_index') }}">back to list</a>
-
-    {{ include('walkin_orders/_delete_form.html.twig') }}
+{% block Stylesheet %}
+    <link rel="stylesheet" href="{{ asset('Arrangestyle/walkinorders.css') }}">
 {% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">
+            ✏️ Edit Walk-in Order
+        </h3>
+
+        <a href="{{ path('app_walkin_orders_index') }}"
+           class="btn btn-sm btn-secondary fw-semibold"
+           style="border-radius:6px; padding: 6px 12px;">
+            Back to Orders
+        </a>
+    </div>
+
+    {# Flash messages (optional) #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"
+                        data-turbo="false">
+                </button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+
+    <div class="card border-0 shadow-sm rounded-4 mx-1">
+        <div class="card-body p-4">
+            {{ form_start(form, { attr: { 'data-turbo': 'false' } }) }}
+
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Buyer Name</label>
+                        {{ form_widget(form.buyerName, {
+                            attr: {'class': 'form-control shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.buyerName) }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Contact Number</label>
+                        {{ form_widget(form.contact, {
+                            attr: {
+                                'class': 'form-control shadow-sm',
+                                'placeholder': '09XXXXXXXXX or +639XXXXXXXXX'
+                            }
+                        }) }}
+                        {{ form_errors(form.contact) }}
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Payment Method</label>
+                        {{ form_widget(form.paymentMethod, {
+                            attr: {'class': 'form-select shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.paymentMethod) }}
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Payment Status</label>
+                        {{ form_widget(form.paymentStatus, {
+                            attr: {'class': 'form-select shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.paymentStatus) }}
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Product</label>
+                        {{ form_widget(form.product, {
+                            attr: {'class': 'form-select shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.product) }}
+
+
+                        {# ✅ AVAILABLE STOCK DISPLAY (matches add logic) #}
+                        <div class="mt-1">
+                            <small id="edit-stock-info" class="text-muted">
+                                {# initial text based on current selected product #}
+                                {% set selectedProductId = form.product.vars.value %}
+                                {% if selectedProductId and stocksMap is defined and stocksMap[selectedProductId] is defined %}
+                                    Available stock: {{ stocksMap[selectedProductId] }}
+                                {% else %}
+                                    Select a product to see available stock.
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="fw-semibold">Quantity</label>
+                        {{ form_widget(form.quantity, {
+                            attr: {'class': 'form-control shadow-sm', 'min': 1}
+                        }) }}
+                        {{ form_errors(form.quantity) }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="fw-semibold">Purchase Date</label>
+                        {{ form_widget(form.purchaseDate, {
+                            attr: {'class': 'form-control shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.purchaseDate) }}
+                    </div>
+
+
+                    <div class="col-12">
+                        <label class="fw-semibold">Warranty Text</label>
+                        {{ form_widget(form.warrantyText, {
+                            attr: {
+                                'class': 'form-control shadow-sm',
+                                'rows': 4
+                            }
+                        }) }}
+                        {{ form_errors(form.warrantyText) }}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{{ path('app_walkin_orders_index') }}"
+                       class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                            class="btn fw-semibold"
+                            style="background-color:#2e2e2e; color:white; border-radius:6px;">
+                        Update Order
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+
+
+    {# 🔁 Same behavior as "Add" — live stock display when product changes #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const stocksMap = {{ stocksMap|json_encode|raw }};
+            const productSelect = document.getElementById('{{ form.product.vars.id }}');
+            const stockInfo = document.getElementById('edit-stock-info');
+
+
+            if (!productSelect || !stockInfo) return;
+
+
+            function updateStockInfo() {
+                const productId = productSelect.value;
+                if (productId && stocksMap[productId] !== undefined) {
+                    stockInfo.textContent = 'Available stock: ' + stocksMap[productId];
+                } else {
+                    stockInfo.textContent = 'Select a product to see available stock.';
+                }
+            }
+
+
+            productSelect.addEventListener('change', updateStockInfo);
+            updateStockInfo(); // initial sync on load
+        });
+    </script>
+{% endblock %}
+
+
+
+
+
+

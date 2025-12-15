@@ -52,7 +52,6 @@
                             <th width="20%">Username</th>
                             <th width="20%">Roles</th>
                             <th width="12%">Status</th>
-                            <th width="25%">Password (Hashed)</th>
                             <th width="15%">Actions</th>
                         </tr>
                     </thead>
@@ -64,7 +63,7 @@
                             {% set isSelf = app.user and user.id == app.user.id %}
 
                             <tr class="text-center">
-                                <td>{{ user.id }}</td>
+                                <td>{{ loop.index }}</td>
 
 
                                 <td>{{ user.username }}</td>
@@ -84,11 +83,6 @@
                                     {% else %}
                                         <span class="badge bg-danger">Inactive</span>
                                     {% endif %}
-                                </td>
-
-
-                                <td class="text-muted password-cell" title="{{ user.password }}">
-                                    {{ user.password|length > 25 ? user.password|slice(0,25) ~ '...' : user.password }}
                                 </td>
 
 

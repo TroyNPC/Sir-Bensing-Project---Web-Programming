@@ -46,8 +46,10 @@ security:
         - { path: ^/servicebooking/new, roles: PUBLIC_ACCESS }
         - { path: ^/servicebooking, roles: [ROLE_ADMIN, ROLE_STAFF] }
         - { path: ^/users, roles: [ROLE_ADMIN]}
+        - { path: ^/staff_dashboard, roles: [ROLE_ADMIN, ROLE_STAFF]}
         - { path: ^/audit_log$, roles: [ROLE_ADMIN]}
         - { path: ^/audit_log/clear, roles: [ROLE_ADMIN]}
+        - { path: ^/walkin_orders, roles: [ROLE_ADMIN, ROLE_STAFF]}
 
 
 when@test:

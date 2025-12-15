@@ -1,11 +1,208 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout.html.twig' %}
 
-{% block title %}New WalkinOrders{% endblock %}
 
-{% block body %}
-    <h1>Create new WalkinOrders</h1>
+{% block title %}Add Walk-in Order{% endblock %}
 
-    {{ include('walkin_orders/_form.html.twig') }}
 
-    <a href="{{ path('app_walkin_orders_index') }}">back to list</a>
+{% block Stylesheet %}
+    <link rel="stylesheet" href="{{ asset('Arrangestyle/walkinorders.css') }}">
 {% endblock %}
+
+
+{% block content %}
+<div class="container-fluid py-5">
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 px-3">
+        <h3 class="fw-bold mb-0" style="color:#2e2e2e;">➕ Add Walk-in Order</h3>
+
+
+        <a href="{{ path('app_walkin_orders_index') }}"
+           class="btn btn-sm btn-secondary fw-semibold"
+           style="border-radius:6px; padding: 6px 12px;"
+           data-turbo="false"
+           >
+            Back to Orders
+        </a>
+    </div>
+
+
+    {# Flash messages (optional, same style as index) #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close"
+                        data-turbo="false">
+                </button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+
+    <div class="card border-0 shadow-sm rounded-4 mx-1">
+        <div class="card-body p-4">
+            {{ form_start(form, { attr: { 'data-turbo': 'false' } }) }}
+
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Buyer Name</label>
+                        {{ form_widget(form.buyerName, {
+                            attr: {'class': 'form-control shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.buyerName) }}
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Contact Number</label>
+                        {{ form_widget(form.contact, {
+                            attr: {
+                                'class': 'form-control shadow-sm',
+                                'placeholder': '09XXXXXXXXX or +639XXXXXXXXX'
+                            }
+                        }) }}
+                        {{ form_errors(form.contact) }}
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Payment Method</label>
+                        {{ form_widget(form.paymentMethod, {
+                            attr: {'class': 'form-select shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.paymentMethod) }}
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Payment Status</label>
+                        {{ form_widget(form.paymentStatus, {
+                            attr: {'class': 'form-select shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.paymentStatus) }}
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Product</label>
+                        {{ form_widget(form.product, {
+                            attr: {'class': 'form-select shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.product) }}
+
+
+                        {# 🔹 CURRENT STOCK DISPLAY (under product select) #}
+                        <div class="mt-1">
+                            <small id="current-stock-display" class="text-muted">
+                                {% set selectedProduct = form.product.vars.data %}
+                                {% if selectedProduct and stocksMap is defined and stocksMap[selectedProduct.id] is defined %}
+                                    Current stock: <strong>{{ stocksMap[selectedProduct.id] }}</strong>
+                                {% else %}
+                                    Current stock: <span class="text-muted">Select a product to see stock.</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="fw-semibold">Quantity</label>
+                        {{ form_widget(form.quantity, {
+                            attr: {'class': 'form-control shadow-sm', 'min': 1}
+                        }) }}
+                        {{ form_errors(form.quantity) }}
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="fw-semibold">Purchase Date (optional)</label>
+                        {{ form_widget(form.purchaseDate, {
+                            attr: {'class': 'form-control shadow-sm'}
+                        }) }}
+                        {{ form_errors(form.purchaseDate) }}
+                        <small class="text-muted">
+                            Leave empty to use current date &amp; time.
+                        </small>
+                    </div>
+
+
+                    <div class="col-12">
+                        <label class="fw-semibold">Warranty Text (optional)</label>
+                        {{ form_widget(form.warrantyText, {
+                            attr: {
+                                'class': 'form-control shadow-sm',
+                                'rows': 4,
+                                'placeholder': 'Leave empty to use the default NexusCore warranty.'
+                            }
+                        }) }}
+                        {{ form_errors(form.warrantyText) }}
+                    </div>
+                </div>
+
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{{ path('app_walkin_orders_index') }}"
+                       class="btn btn-secondary"
+                       data-turbo="false"
+                       >
+                        Cancel
+                    </a>
+                    <button type="submit"
+                            class="btn fw-semibold"
+                            style="background-color:#F88F6A; color:white; border-radius:6px;"
+                            >
+                        Save Order
+                    </button>
+                </div>
+
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+
+    {# 🔹 JS: update stock text when product changes #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const select = document.getElementById('{{ form.product.vars.id }}');
+            const display = document.getElementById('current-stock-display');
+            const stocksMap = {{ stocksMap|default({})|json_encode|raw }};
+
+
+            if (!select || !display) {
+                return;
+            }
+
+
+            function updateStock() {
+                const val = select.value;
+                if (val && typeof stocksMap[val] !== 'undefined') {
+                    display.innerHTML = 'Current stock: <strong>' + stocksMap[val] + '</strong>';
+                } else {
+                    display.innerHTML = 'Current stock: <span class="text-muted">Select a product to see stock.</span>';
+                }
+            }
+
+
+            select.addEventListener('change', updateStock);
+            // initial sync
+            updateStock();
+        });
+    </script>
+{% endblock %}
+
+
+
+
+
+

@@ -73,7 +73,6 @@ final class StocksController extends AbstractController
                     'stock'      => $stocks->getStock(),
                 ]
             );
-
             return $this->redirectToRoute('app_stocks_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -170,7 +169,7 @@ public function edit(
             }
         }
 
-
+        $this->addFlash('Success', 'Successfully edited stock.');
         return $this->redirectToRoute('app_stocks_index', [], Response::HTTP_SEE_OTHER);
     }
 
@@ -223,7 +222,7 @@ public function delete(
         );
     }
 
-
+    $this->addFlash('Success', 'Successfully deleted stocks.');
     return $this->redirectToRoute('app_stocks_index', [], Response::HTTP_SEE_OTHER);
 }
 
