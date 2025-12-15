@@ -39,7 +39,7 @@ function initStocksTable() {
   const dt = $table.DataTable({
     destroy: true,
     responsive: false,
-    scrollX: true,
+    scrollX: false,
     paging: true,
     pageLength: 10,
     lengthChange: true,

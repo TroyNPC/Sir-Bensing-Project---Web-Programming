@@ -36,8 +36,10 @@ class StaffDashboardController extends AbstractController
             'paymentStatus' => 'paid'
         ]);
 
-        // 🔹 Total products (global, same as admin)
-        $productCount = $productRepo->count([]);
+                // 🔹 Total products created by this staff
+        $productCount = $productRepo->count([
+            'createdBy' => $staff
+        ]);
 
         return $this->render('staff_dashboard/index.html.twig', [
             'totalOrders'  => $totalOrders,
