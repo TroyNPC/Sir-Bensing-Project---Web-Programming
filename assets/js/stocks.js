@@ -34,12 +34,10 @@ function initStocksTable() {
     rowCount > 0 &&
     !$table.find('tbody tr td').first().text().includes('No records');
 
-  if (!hasData) return;
-
   const dt = $table.DataTable({
     destroy: true,
     responsive: false,
-    scrollX: false,
+    scrollX: true,
     paging: true,
     pageLength: 10,
     lengthChange: true,
